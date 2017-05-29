@@ -1,0 +1,6 @@
+int main(){
+    int i = 0;
+    i = 10;
+}
+
+main();
