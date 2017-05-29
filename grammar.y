@@ -52,16 +52,20 @@ stmt : var_decl | func_decl
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
-var_decl : ident ident { $$ = new NVariableDeclaration(*$1, *$2); }
+var_decl : ident ident { $$ = new NVariableDeclaration(*$1, *$2, nullptr); }
 				 | ident ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, *$2, $4); }
 				 ;
 func_decl : ident ident TLPAREN func_decl_args TRPAREN block
 					{ $$ = new NFunctionDeclaration(*$1, *$2, *$4, *$6); delete $4; }
 					;
+
+
 func_decl_args : /* blank */ { $$ = new VariableList(); }
 							 | var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
 							 | func_decl_args TCOMMA var_decl { $1->push_back($<var_decl>3); }
 							 ;
+
+
 ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
 			;
 numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }

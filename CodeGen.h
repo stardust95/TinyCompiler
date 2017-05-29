@@ -27,6 +27,7 @@ public:
     BasicBlock * block;
     Value * returnValue;
     std::map<string, Value*> locals;
+    std::map<string, string> types;     // type name string of vars
 };
 
 class CodeGenContext{
@@ -46,6 +47,12 @@ public:
     SymTable& locals() const{
         return blockStack.top()->locals;
     };
+
+    std::map<string, string>& types() const{
+        return blockStack.top()->types;
+    };
+
+
 
     BasicBlock* currentBlock() const{
         return blockStack.top()->block;

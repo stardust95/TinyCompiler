@@ -11,6 +11,9 @@ CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11 -Wdeprecated-register
 LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
 LIBS = `$(LLVMCONFIG) --libs`
 
+clean:
+	$(RM) -rf grammar.cpp grammar.hpp compiler tokens.cpp *.output $(OBJS)
+
 CodeGen.cpp: CodeGen.h
 
 grammar.cpp: grammar.y ASTNodes.h

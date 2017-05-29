@@ -11,12 +11,16 @@
 #include <llvm/Support/raw_ostream.h>
 
 #include "CodeGen.h"
+#include "ASTNodes.h"
+
+#define ISTYPE(ty1,ty2) (typeid(ty1) == typeid(ty2))
 
 /*
- * TODO: 1. type upgrade
+ * TODO: 1. type upgrade in assign
  *
  *
  */
+
 
 static void PrintSymTable(SymTable table){
     cout << "======= Print Symbol Table ========" << endl;
@@ -62,29 +66,58 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
     if( context.locals().find(this->lhs.name) == context.locals().end() ){
         return LogErrorV("Undeclared variable");
     }
-    Value* exp = this->rhs.codeGen(context);
     Value* dst = context.locals()[this->lhs.name];
-//    this->rhs.print("rhs: ");
+    Value* exp = nullptr;
+    string type = context.types()[this->lhs.name];
+
+    // TODO
+//    if( type == "int" && ISTYPE(rhs, NDouble) ){
+//        exp = (NInteger(dynamic_cast<NDouble&>(rhs).value)).codeGen(context);
+//    }else if( type == "double" && ISTYPE(rhs, NInteger) ){
+//        exp = ((NDouble) dynamic_cast<NInteger&>(rhs)).codeGen(context);
+//    }
+    if( exp == nullptr ){
+        exp = this->rhs.codeGen(context);
+    }
+    cout << "type = " << type << endl;
+    lhs.print("lhs: ");
+    rhs.print("rhs: ");
     return context.builder.CreateStore(exp, dst);
 //    return new StoreInst(exp, dst, false, context.currentBlock());
 }
 
 llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
     cout << "Generating binary operator" << endl;
+
     Value* L = this->lhs.codeGen(context);
     Value* R = this->rhs.codeGen(context);
+    bool fp = false;
+
+    if( ISTYPE(this->rhs, NDouble) || ISTYPE(this->lhs, NDouble) ){  // type upgrade
+        fp = true;
+        if( ISTYPE(this->rhs, NInteger) ){
+            R = ((NDouble)dynamic_cast<NInteger&>(this->rhs)).codeGen(context);
+        }
+        if( ISTYPE(this->lhs, NInteger) ){
+            L = ((NDouble) dynamic_cast<NInteger&>(this->lhs)).codeGen(context);
+        }
+    }
+
     if( !L || !R ){
         return nullptr;
     }
+
+    cout << "fp is " << (fp ? "true" : "false") << endl;
+
     switch (this->op){
         case TPLUS:
-            return context.builder.CreateAdd(L, R, "addtmp");
+            return fp ? context.builder.CreateFAdd(L, R, "addftmp") : context.builder.CreateAdd(L, R, "addtmp");
 
         case TMINUS:
-            return context.builder.CreateSub(L, R, "subtmp");
+            return fp ? context.builder.CreateFSub(L, R, "subftmp") : context.builder.CreateSub(L, R, "subtmp");
 
         case TMUL:
-            return context.builder.CreateMul(L, R, "multmp");
+            return fp ? context.builder.CreateFMul(L, R, "mulftmp") : context.builder.CreateMul(L, R, "multmp");
 
         // TODO： compare codegen
 //        case '<':
@@ -105,13 +138,13 @@ llvm::Value* NBlock::codeGen(CodeGenContext &context) {
 }
 
 llvm::Value* NInteger::codeGen(CodeGenContext &context) {
-    cout << "Generating Integer" << endl;
+    cout << "Generating Integer: " << this->value << endl;
     return ConstantInt::get(Type::getInt64Ty(getGlobalContext()), this->value, true);
 //    return ConstantInt::get(getGlobalContext(), APInt(INTBITS, this->value, true));
 }
 
 llvm::Value* NDouble::codeGen(CodeGenContext &context) {
-    cout << "Generating Double" << endl;
+    cout << "Generating Double: " << this->value << endl;
     return ConstantFP::get(Type::getDoubleTy(getGlobalContext()), this->value);
 //    return ConstantFP::get(getGlobalContext(), APFloat(this->value));
 }
@@ -126,14 +159,15 @@ llvm::Value* NIdentifier::codeGen(CodeGenContext &context) {
 }
 
 llvm::Value* NExpressionStatement::codeGen(CodeGenContext &context) {
-    this->expression.codeGen(context);
+    return this->expression.codeGen(context);
 }
 
 llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
     cout << "Generating function declaration of " << this->id.name << endl;
     std::vector<Type*> argTypes;
+
     for(auto &arg: this->arguments){
-        argTypes.push_back(TypeOf(arg->id));
+        argTypes.push_back(TypeOf(arg->type));
     }
     FunctionType* functionType = FunctionType::get(TypeOf(this->type), argTypes, false);
     Function* function = Function::Create(functionType, GlobalValue::InternalLinkage, this->id.name.c_str(), context.theModule.get());
@@ -141,6 +175,18 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
 
     context.builder.SetInsertPoint(basicBlock);
     context.pushBlock(basicBlock);
+
+    // declare function params
+    Function::arg_iterator ir_arg_it = function->arg_begin();
+    Value* ir_arg;
+
+    for(auto& origin_arg_it: this->arguments){
+        Value* argAlloc = origin_arg_it->codeGen(context);
+
+        ir_arg = ir_arg_it++;
+        ir_arg->setName(origin_arg_it->id.name);
+        context.builder.CreateStore(ir_arg, argAlloc, false);
+    }
 
     this->block.codeGen(context);
 
@@ -181,7 +227,7 @@ llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
     Type* type = TypeOf(this->type);
 
     AllocaInst* inst = context.builder.CreateAlloca(type);
-//    AllocaInst* inst = new AllocaInst(type, id.name.c_str(), context.currentBlock());
+    context.types()[this->id.name] = this->type.name;
 
     context.locals()[this->id.name] = inst;
     PrintSymTable(context.locals());

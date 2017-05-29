@@ -1,6 +1,12 @@
+int do_math(int a) {
+  int x = a * 5
+  int b = x + 1
+  return x + 3
+}
+
 int main(){
-    int a = 0
-    int b = 1 + 1
+    double a = 0.0
+    double b = 1 + 0.0
     b = a
     return a
 }

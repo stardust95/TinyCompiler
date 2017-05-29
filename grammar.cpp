@@ -472,9 +472,9 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    43,    43,    45,    46,    48,    48,    49,    50,    52,
-      53,    55,    56,    58,    61,    62,    63,    65,    67,    68,
-      70,    71,    72,    73,    74,    75,    77,    78,    79,    80,
-      80,    80,    80,    80,    80,    81,    81,    81,    81
+      53,    55,    56,    58,    63,    64,    65,    69,    71,    72,
+      74,    75,    76,    77,    78,    79,    81,    82,    83,    84,
+      84,    84,    84,    84,    84,    85,    85,    85,    85
 };
 #endif
 
@@ -1328,7 +1328,7 @@ yyreduce:
 
   case 11:
 #line 55 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NVariableDeclaration(*(yyvsp[-1].ident), *(yyvsp[0].ident)); }
+    { (yyval.stmt) = new NVariableDeclaration(*(yyvsp[-1].ident), *(yyvsp[0].ident), nullptr); }
 #line 1333 "grammar.cpp" /* yacc.c:1661  */
     break;
 
@@ -1345,85 +1345,85 @@ yyreduce:
     break;
 
   case 14:
-#line 61 "grammar.y" /* yacc.c:1661  */
+#line 63 "grammar.y" /* yacc.c:1661  */
     { (yyval.varvec) = new VariableList(); }
 #line 1351 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 15:
-#line 62 "grammar.y" /* yacc.c:1661  */
+#line 64 "grammar.y" /* yacc.c:1661  */
     { (yyval.varvec) = new VariableList(); (yyval.varvec)->push_back((yyvsp[0].var_decl)); }
 #line 1357 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 16:
-#line 63 "grammar.y" /* yacc.c:1661  */
+#line 65 "grammar.y" /* yacc.c:1661  */
     { (yyvsp[-2].varvec)->push_back((yyvsp[0].var_decl)); }
 #line 1363 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 17:
-#line 65 "grammar.y" /* yacc.c:1661  */
+#line 69 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
 #line 1369 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 18:
-#line 67 "grammar.y" /* yacc.c:1661  */
+#line 71 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = new NInteger(atol((yyvsp[0].string)->c_str())); delete (yyvsp[0].string); }
 #line 1375 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 19:
-#line 68 "grammar.y" /* yacc.c:1661  */
+#line 72 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = new NDouble(atof((yyvsp[0].string)->c_str())); delete (yyvsp[0].string); }
 #line 1381 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 20:
-#line 70 "grammar.y" /* yacc.c:1661  */
+#line 74 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = new NAssignment(*(yyvsp[-2].ident), *(yyvsp[0].expr)); }
 #line 1387 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 21:
-#line 71 "grammar.y" /* yacc.c:1661  */
+#line 75 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = new NMethodCall(*(yyvsp[-3].ident), *(yyvsp[-1].exprvec)); delete (yyvsp[-1].exprvec); }
 #line 1393 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 22:
-#line 72 "grammar.y" /* yacc.c:1661  */
+#line 76 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = (yyvsp[0].ident); }
 #line 1399 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 24:
-#line 74 "grammar.y" /* yacc.c:1661  */
+#line 78 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = new NBinaryOperator(*(yyvsp[-2].expr), (yyvsp[-1].token), *(yyvsp[0].expr)); }
 #line 1405 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 25:
-#line 75 "grammar.y" /* yacc.c:1661  */
+#line 79 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = (yyvsp[-1].expr); }
 #line 1411 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 26:
-#line 77 "grammar.y" /* yacc.c:1661  */
+#line 81 "grammar.y" /* yacc.c:1661  */
     { (yyval.exprvec) = new ExpressionList(); }
 #line 1417 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 27:
-#line 78 "grammar.y" /* yacc.c:1661  */
+#line 82 "grammar.y" /* yacc.c:1661  */
     { (yyval.exprvec) = new ExpressionList(); (yyval.exprvec)->push_back((yyvsp[0].expr)); }
 #line 1423 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 28:
-#line 79 "grammar.y" /* yacc.c:1661  */
+#line 83 "grammar.y" /* yacc.c:1661  */
     { (yyvsp[-2].exprvec)->push_back((yyvsp[0].expr)); }
 #line 1429 "grammar.cpp" /* yacc.c:1661  */
     break;
@@ -1657,4 +1657,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 85 "grammar.y" /* yacc.c:1906  */
+#line 89 "grammar.y" /* yacc.c:1906  */

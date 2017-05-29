@@ -33,6 +33,11 @@ public:
 };
 
 class NExpression : public Node {
+public:
+//    NExpression(){}
+//
+//    NExpression operator=(const NExpression& ) = default;
+
 	string getTypeName() const override {
 		return "NExpression";
 	}
@@ -42,25 +47,6 @@ class NStatement : public Node {
 	string getTypeName() const override {
 		return "NStatement";
 	}
-};
-
-class NInteger : public NExpression {
-public:
-    uint64_t value;
-
-	NInteger(uint64_t value)
-		: value(value) {
-			
-	}
-
-	string getTypeName() const override {
-		return "NInteger";
-	}
-
-	void print(string prefix) const override{
-		cout << prefix << getTypeName() << this->m_DELIM << value << endl;
-	}
-	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NDouble : public NExpression {
@@ -79,7 +65,32 @@ public:
 	void print(string prefix) const override{
 		cout << prefix << getTypeName() << this->m_DELIM << value << endl;
 	}
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
+};
+
+class NInteger : public NExpression {
+public:
+    uint64_t value;
+
+    NInteger(uint64_t value)
+            : value(value) {
+
+    }
+
+    string getTypeName() const override {
+        return "NInteger";
+    }
+
+    void print(string prefix) const override{
+        cout << prefix << getTypeName() << this->m_DELIM << value << endl;
+    }
+
+    operator NDouble(){
+        return NDouble(value);
+    }
+
+    virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NIdentifier : public NExpression {
@@ -171,7 +182,6 @@ public:
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
-
 		lhs.print(nextPrefix);
 		rhs.print(nextPrefix);
 	}
@@ -225,7 +235,7 @@ public:
 	NExpression *assignmentExpr;
 
 	NVariableDeclaration(const NIdentifier &type, NIdentifier &id)
-		: type(type), id(id) {
+		: type(type), id(id), assignmentExpr(nullptr) {
 	}
 
 	NVariableDeclaration(const NIdentifier &type, NIdentifier &id, NExpression *assignmentExpr)
@@ -241,7 +251,8 @@ public:
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
 		type.print(nextPrefix);
 		id.print(nextPrefix);
-		assignmentExpr->print(nextPrefix);
+        if( assignmentExpr != nullptr )
+		    assignmentExpr->print(nextPrefix);
 	}
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
@@ -267,6 +278,7 @@ public:
 
 		type.print(nextPrefix);
 		id.print(nextPrefix);
+
 		for(auto it=arguments.begin(); it!=arguments.end(); it++){
 			(*it)->print(nextPrefix);
 		}
@@ -284,7 +296,7 @@ public:
 
     }
     virtual llvm::Value* codeGen(CodeGenContext& context) override ;
-    
+
 };
 
 std::unique_ptr<NExpression> LogError(const char* str);
