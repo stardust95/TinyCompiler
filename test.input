@@ -1,13 +1,13 @@
 int do_math(int a) {
   int x = a * 5
-  int b = x + 1
-  return x + 3
+  double b = x < 2
+  return x
 }
 
 int main(){
     double a = 0.0
     double b = 1 + 0.0
     b = a
-    return a
+    int c = do_math(1)
+    return c
 }
-

@@ -32,7 +32,7 @@
 %type <varvec> func_decl_args
 %type <exprvec> call_args
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl
+%type <stmt> stmt var_decl func_decl if_stmt
 %type <token> comparison
 
 %left TPLUS TMINUS
@@ -84,6 +84,6 @@ call_args : /* blank */ { $$ = new ExpressionList(); }
 comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
 					 | TPLUS | TMINUS | TMUL | TDIV
 					 ;
-
+if_stmt : TIF TLPAREN expr TRPAREN block { $$ = new NIfStatement(*$3, *$5); }
 
 %%

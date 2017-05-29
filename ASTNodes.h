@@ -299,6 +299,22 @@ public:
 
 };
 
+class NIfStatement: public NStatement{
+public:
+
+    NExpression& condition;
+    NBlock& block;
+
+    NIfStatement(NExpression& cond, NBlock& blk)
+            : condition(cond), block(blk){
+
+    }
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+
+};
+
 std::unique_ptr<NExpression> LogError(const char* str);
 
 #endif

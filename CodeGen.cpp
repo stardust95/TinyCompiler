@@ -67,21 +67,20 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
         return LogErrorV("Undeclared variable");
     }
     Value* dst = context.locals()[this->lhs.name];
-    Value* exp = nullptr;
-    string type = context.types()[this->lhs.name];
+    Value* exp = exp = this->rhs.codeGen(context);;
+    string dstType = context.types()[this->lhs.name];
 
-    // TODO
-//    if( type == "int" && ISTYPE(rhs, NDouble) ){
-//        exp = (NInteger(dynamic_cast<NDouble&>(rhs).value)).codeGen(context);
-//    }else if( type == "double" && ISTYPE(rhs, NInteger) ){
-//        exp = ((NDouble) dynamic_cast<NInteger&>(rhs)).codeGen(context);
-//    }
-    if( exp == nullptr ){
-        exp = this->rhs.codeGen(context);
+    if( dstType == "int" && (exp->getType()->getTypeID() == Type::DoubleTyID) ){
+        exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(getGlobalContext()));
+    }else if( dstType == "double" && (exp->getType()->getTypeID() == Type::IntegerTyID) ){
+        exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(getGlobalContext()));
     }
-    cout << "type = " << type << endl;
-    lhs.print("lhs: ");
-    rhs.print("rhs: ");
+
+//    cout << "dst typeid = " << dst->getType()->getTypeID() << endl;
+//    cout << "exp typeid = " << exp->getType()->getTypeID() << ":" << (exp->getType()->getTypeID() == Type::IntegerTyID) << endl;
+
+//    lhs.print("lhs: ");
+//    rhs.print("rhs: ");
     return context.builder.CreateStore(exp, dst);
 //    return new StoreInst(exp, dst, false, context.currentBlock());
 }
@@ -93,13 +92,13 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
     Value* R = this->rhs.codeGen(context);
     bool fp = false;
 
-    if( ISTYPE(this->rhs, NDouble) || ISTYPE(this->lhs, NDouble) ){  // type upgrade
+    if( (L->getType()->getTypeID() == Type::DoubleTyID) || (R->getType()->getTypeID() == Type::DoubleTyID) ){  // type upgrade
         fp = true;
-        if( ISTYPE(this->rhs, NInteger) ){
-            R = ((NDouble)dynamic_cast<NInteger&>(this->rhs)).codeGen(context);
+        if( (R->getType()->getTypeID() != Type::DoubleTyID) ){
+            R = context.builder.CreateUIToFP(R, Type::getDoubleTy(getGlobalContext()), "ftmp");
         }
-        if( ISTYPE(this->lhs, NInteger) ){
-            L = ((NDouble) dynamic_cast<NInteger&>(this->lhs)).codeGen(context);
+        if( (L->getType()->getTypeID() != Type::DoubleTyID) ){
+            L = context.builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()), "ftmp");
         }
     }
 
@@ -112,16 +111,22 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
     switch (this->op){
         case TPLUS:
             return fp ? context.builder.CreateFAdd(L, R, "addftmp") : context.builder.CreateAdd(L, R, "addtmp");
-
         case TMINUS:
             return fp ? context.builder.CreateFSub(L, R, "subftmp") : context.builder.CreateSub(L, R, "subtmp");
-
         case TMUL:
             return fp ? context.builder.CreateFMul(L, R, "mulftmp") : context.builder.CreateMul(L, R, "multmp");
-
-        // TODO： compare codegen
-//        case '<':
-//            return context.Builder.Create(L, R, "cmptmp");
+        case TCLT:
+            return fp ? context.builder.CreateFCmpULT(L, R, "cmpftmp") : context.builder.CreateICmpULT(L, R, "cmptmp");
+        case TCLE:
+            return fp ? context.builder.CreateFCmpOLE(L, R, "cmpftmp") : context.builder.CreateICmpSLE(L, R, "cmptmp");
+        case TCGE:
+            return fp ? context.builder.CreateFCmpOGE(L, R, "cmpftmp") : context.builder.CreateICmpSGE(L, R, "cmptmp");
+        case TCGT:
+            return fp ? context.builder.CreateFCmpOGT(L, R, "cmpftmp") : context.builder.CreateICmpSGT(L, R, "cmptmp");
+        case TCEQ:
+            return fp ? context.builder.CreateFCmpOEQ(L, R, "cmpftmp") : context.builder.CreateICmpEQ(L, R, "cmptmp");
+        case TCNE:
+            return fp ? context.builder.CreateFCmpONE(L, R, "cmpftmp") : context.builder.CreateICmpNE(L, R, "cmptmp");
         default:
             return LogErrorV("Unknown binary operator");
     }
