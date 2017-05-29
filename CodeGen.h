@@ -83,7 +83,6 @@ public:
 
     void runCode();
 
-
 };
 
 Value* LogErrorV(const char* str);

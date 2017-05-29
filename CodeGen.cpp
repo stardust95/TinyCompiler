@@ -13,14 +13,45 @@
 #include "CodeGen.h"
 #include "ASTNodes.h"
 
-#define ISTYPE(ty1,ty2) (typeid(ty1) == typeid(ty2))
+#define ISTYPE(value, id) (value->getType()->getTypeID() == id)
 
 /*
  * TODO: 1. type upgrade in assign
  *
  *
  */
+static string llvmTypeToStr(Value* value){
+    Type::TypeID typeID;
+    if( value )
+        typeID = value->getType()->getTypeID();
+    else
+        return "Value is nullptr";
 
+    switch (typeID){
+        case Type::VoidTyID:
+            return "VoidTyID";
+        case Type::HalfTyID:
+            return "HalfTyID";
+        case Type::FloatTyID:
+            return "FloatTyID";
+        case Type::DoubleTyID:
+            return "DoubleTyID";
+        case Type::IntegerTyID:
+            return "IntegerTyID";
+        case Type::FunctionTyID:
+            return "FunctionTyID";
+        case Type::StructTyID:
+            return "StructTyID";
+        case Type::ArrayTyID:
+            return "ArrayTyID";
+        case Type::PointerTyID:
+            return "PointerTyID";
+        case Type::VectorTyID:
+            return "VectorTyID";
+        default:
+            return "Unknown";
+    }
+}
 
 static void PrintSymTable(SymTable table){
     cout << "======= Print Symbol Table ========" << endl;
@@ -105,8 +136,10 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
     if( !L || !R ){
         return nullptr;
     }
+    cout << "fp = " << ( fp ? "true" : "false" ) << endl;
+    cout << "L is " << llvmTypeToStr(L) << endl;
+    cout << "R is " << llvmTypeToStr(R) << endl;
 
-    cout << "fp is " << (fp ? "true" : "false") << endl;
 
     switch (this->op){
         case TPLUS:
@@ -130,7 +163,6 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
         default:
             return LogErrorV("Unknown binary operator");
     }
-
 }
 
 llvm::Value* NBlock::codeGen(CodeGenContext &context) {
@@ -249,6 +281,72 @@ llvm::Value* NReturnStatement::codeGen(CodeGenContext &context) {
     context.setCurrentReturnValue(returnValue);
     return returnValue;
 }
+
+llvm::Value* NIfStatement::codeGen(CodeGenContext &context) {
+    cout << "Generating if statement" << endl;
+    Value* condValue = this->condition.codeGen(context);
+    if( !condValue )
+        return nullptr;
+
+    if( ISTYPE(condValue, Type::IntegerTyID) ){
+        condValue = context.builder.CreateICmpNE(condValue, ConstantInt::get(Type::getInt1Ty(getGlobalContext()), 0, true));
+    }else if( ISTYPE(condValue, Type::DoubleTyID) ){
+        condValue = context.builder.CreateFCmpONE(condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
+    }else{
+        return LogErrorV("Invalid condition type");
+    }
+
+    Function* theFunction = context.builder.GetInsertBlock()->getParent();      // the function where if statement is in
+
+    BasicBlock *thenBB = BasicBlock::Create(getGlobalContext(), "then", theFunction);
+    BasicBlock *falseBB = BasicBlock::Create(getGlobalContext(), "else");
+    BasicBlock *mergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+
+    if( this->falseBlock ){
+        context.builder.CreateCondBr(condValue, thenBB, falseBB);
+    } else{
+        context.builder.CreateCondBr(condValue, thenBB, mergeBB);
+    }
+
+    context.builder.SetInsertPoint(thenBB);
+
+    context.pushBlock(thenBB);
+
+    this->trueBlock->codeGen(context);
+
+    context.popBlock();
+
+    thenBB = context.builder.GetInsertBlock();
+
+    if( thenBB->getTerminator() == nullptr ){       //
+        context.builder.CreateBr(mergeBB);
+    }
+
+    if( this->falseBlock ){
+        theFunction->getBasicBlockList().push_back(falseBB);    //
+        context.builder.SetInsertPoint(falseBB);            //
+
+        context.pushBlock(thenBB);
+
+        this->falseBlock->codeGen(context);
+
+        context.popBlock();
+
+        context.builder.CreateBr(mergeBB);
+    }
+
+    theFunction->getBasicBlockList().push_back(mergeBB);        //
+    context.builder.SetInsertPoint(mergeBB);        //
+
+    return nullptr;
+}
+
+
+
+/*
+ * Global Functions
+ *
+ */
 
 std::unique_ptr<NExpression> LogError(const char *str) {
     fprintf(stderr, "LogError: %s\n", str);

@@ -48,6 +48,7 @@ stmts : stmt { $$ = new NBlock(); $$->statements.push_back($<stmt>1); }
 stmt : var_decl | func_decl
 		 | expr { $$ = new NExpressionStatement(*$1); }
 		 | TRETURN expr { $$ = new NReturnStatement(*$2); }
+		 | if_stmt
 		 ;
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
@@ -84,6 +85,6 @@ call_args : /* blank */ { $$ = new ExpressionList(); }
 comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
 					 | TPLUS | TMINUS | TMUL | TDIV
 					 ;
-if_stmt : TIF TLPAREN expr TRPAREN block { $$ = new NIfStatement(*$3, *$5); }
-
+if_stmt : TIF expr block { $$ = new NIfStatement(*$2, $3); }
+		| TIF expr block TELSE block { $$ = new NIfStatement(*$2, $3, $5); }
 %%

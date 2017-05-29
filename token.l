@@ -26,6 +26,8 @@ static FILE* yyparse_file_ptr;
 %%
 
 [ \t\r\n]				;
+"if"                    return TOKEN(TIF);
+"else"                  return TOKEN(TELSE);
 "return"                return TOKEN(TRETURN);
 [a-zA-Z_][a-zA-Z0-9_]*	SAVE_TOKEN; return TIDENTIFIER;
 [0-9]+\.[0-9]*			SAVE_TOKEN; return TDOUBLE;

@@ -295,6 +295,13 @@ public:
             : expression(expression) {
 
     }
+
+
+    string getTypeName() const override {
+        return "NReturnStatement";
+    }
+
+
     virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 
 };
@@ -303,12 +310,34 @@ class NIfStatement: public NStatement{
 public:
 
     NExpression& condition;
-    NBlock& block;
+    NBlock* trueBlock;          // should not be null
+    NBlock* falseBlock;         // can be null
 
-    NIfStatement(NExpression& cond, NBlock& blk)
-            : condition(cond), block(blk){
+
+    NIfStatement(NExpression& cond, NBlock* blk, NBlock* blk2 = nullptr)
+            : condition(cond), trueBlock(blk), falseBlock(blk2){
 
     }
+
+
+    string getTypeName() const override {
+        return "NIfStatement";
+    }
+
+    void print(string prefix) const override{
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        condition.print(nextPrefix);
+
+        trueBlock->print(nextPrefix);
+
+        if( falseBlock ){
+            falseBlock->print(nextPrefix);
+        }
+
+    }
+
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
 

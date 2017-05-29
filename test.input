@@ -7,7 +7,9 @@ int do_math(int a) {
 int main(){
     double a = 0.0
     double b = 1 + 0.0
-    b = a
+    if( a < b ){
+        b = a
+    }
     int c = do_math(1)
     return c
 }
