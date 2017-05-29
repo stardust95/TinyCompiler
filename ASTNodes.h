@@ -1,4 +1,7 @@
 
+#ifndef __ASTNODES_H__
+#define __ASTNODES_H__
+
 #include <iostream>
 #include <vector>
 #include <llvm/IR/Value.h>
@@ -24,44 +27,44 @@ protected:
 	const char* m_PREFIX = "--";
 public:
 	virtual ~Node() {}
-	virtual string getName() const = 0;
+	virtual string getTypeName() const = 0;
 	virtual void print(string prefix) const{}
 	virtual llvm::Value *codeGen(CodeGenContext &context) { return (llvm::Value *)0; }
 };
 
 class NExpression : public Node {
-	string getName() const override {
+	string getTypeName() const override {
 		return "NExpression";
 	}
 };
 
 class NStatement : public Node {
-	string getName() const override {
+	string getTypeName() const override {
 		return "NStatement";
 	}
 };
 
 class NInteger : public NExpression {
-  public:
-	long long value;
+public:
+    uint64_t value;
 
-	NInteger(long long value)
+	NInteger(uint64_t value)
 		: value(value) {
 			
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NInteger";
 	}
 
 	void print(string prefix) const override{
-		cout << prefix << getName() << this->m_DELIM << value << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << value << endl;
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NDouble : public NExpression {
-  public:
+public:
 	double value;
 
 	NDouble(double value)
@@ -69,18 +72,18 @@ class NDouble : public NExpression {
 		// return "NDoub le=" << value << endl;
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NDouble";
 	}
-	
+
 	void print(string prefix) const override{
-		cout << prefix << getName() << this->m_DELIM << value << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << value << endl;
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NIdentifier : public NExpression {
-  public:
+public:
 	std::string name;
 
 	NIdentifier(const std::string &name)
@@ -88,19 +91,19 @@ class NIdentifier : public NExpression {
 		// return "NIdentifier=" << name << endl;
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NIdentifier";
 	}
 
 	void print(string prefix) const override{
-		cout << prefix << getName() << this->m_DELIM << name << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << name << endl;
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NMethodCall
 	: public NExpression {
-  public:
+public:
 	const NIdentifier &id;
 	ExpressionList arguments;
 
@@ -112,24 +115,24 @@ class NMethodCall
 		: id(id) {
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NMethodCall";
 	}
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << endl;
 		this->id.print(nextPrefix);
 		for(auto it=arguments.begin(); it!=arguments.end(); it++){
 			(*it)->print(nextPrefix);
 		}
 	}
 
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NBinaryOperator : public NExpression {
-  public:
+public:
 	int op;
 	NExpression &lhs;
 	NExpression &rhs;
@@ -138,22 +141,22 @@ class NBinaryOperator : public NExpression {
 		: lhs(lhs), rhs(rhs), op(op) {
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NBinaryOperator";
 	}
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << op << endl;
-		
+		cout << prefix << getTypeName() << this->m_DELIM << op << endl;
+
 		lhs.print(nextPrefix);
 		rhs.print(nextPrefix);
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NAssignment : public NExpression {
-  public:
+public:
 	NIdentifier &lhs;
 	NExpression &rhs;
 
@@ -161,62 +164,62 @@ class NAssignment : public NExpression {
 		: lhs(lhs), rhs(rhs) {
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NAssignment";
 	}
-	
+
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << endl;
-		
+		cout << prefix << getTypeName() << this->m_DELIM << endl;
+
 		lhs.print(nextPrefix);
 		rhs.print(nextPrefix);
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NBlock : public NExpression {
-  public:
+public:
 	StatementList statements;
 
 	NBlock() {}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NBlock";
 	}
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << endl;
 		for(auto it=statements.begin(); it!=statements.end(); it++){
 			(*it)->print(nextPrefix);
 		}
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NExpressionStatement : public NStatement {
-  public:
+public:
 	NExpression &expression;
 
 	NExpressionStatement(NExpression &expression)
 		: expression(expression) {
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NExpressionStatement";
 	}
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << endl;
 		expression.print(nextPrefix);
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NVariableDeclaration : public NStatement {
-  public:
+public:
 	const NIdentifier &type;
 	NIdentifier &id;
 	NExpression *assignmentExpr;
@@ -229,22 +232,22 @@ class NVariableDeclaration : public NStatement {
 		: type(type), id(id), assignmentExpr(assignmentExpr) {
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NVariableDeclaration";
 	}
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << endl;
+		cout << prefix << getTypeName() << this->m_DELIM << endl;
 		type.print(nextPrefix);
 		id.print(nextPrefix);
 		assignmentExpr->print(nextPrefix);
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NFunctionDeclaration : public NStatement {
-  public:
+public:
 	const NIdentifier &type;
 	const NIdentifier &id;
 	VariableList arguments;
@@ -254,14 +257,14 @@ class NFunctionDeclaration : public NStatement {
 		: type(type), id(id), arguments(arguments), block(block) {
 	}
 
-	string getName() const override {
+	string getTypeName() const override {
 		return "NFunctionDeclaration";
 	}
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
-		cout << prefix << getName() << this->m_DELIM << endl;
-		
+		cout << prefix << getTypeName() << this->m_DELIM << endl;
+
 		type.print(nextPrefix);
 		id.print(nextPrefix);
 		for(auto it=arguments.begin(); it!=arguments.end(); it++){
@@ -269,11 +272,21 @@ class NFunctionDeclaration : public NStatement {
 		}
 		block.print(nextPrefix);
 	}
-	virtual llvm::Value* codeGen(CodeGenContext& context);
+	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
-std::unique_ptr<NExpression> LogError(const char* str){
-	fprintf(stderr, "LogError: %s\n", str);
-	return nullptr;
-}
+class NReturnStatement: public NStatement{
+public:
+    NExpression &expression;
 
+    NReturnStatement(NExpression& expression)
+            : expression(expression) {
+
+    }
+    virtual llvm::Value* codeGen(CodeGenContext& context) override ;
+    
+};
+
+std::unique_ptr<NExpression> LogError(const char* str);
+
+#endif

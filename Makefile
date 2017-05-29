@@ -2,12 +2,16 @@ all: compiler
 
 OBJS = grammar.o \
 		token.o  \
+		CodeGen.o \
+		utils.o \
 		main.o	 \
 
 LLVMCONFIG = llvm-config
-CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11
+CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11 -Wdeprecated-register
 LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
 LIBS = `$(LLVMCONFIG) --libs`
+
+CodeGen.cpp: CodeGen.h
 
 grammar.cpp: grammar.y ASTNodes.h
 	bison -d -o $@ $<
@@ -21,7 +25,7 @@ token.cpp: token.l grammar.hpp
 	g++ -c $(CPPFLAGS) -o $@ $<
 
 compiler: $(OBJS)
-	g++ -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
+	g++ $(CPPFLAGS) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
 test: compiler test.input
 	cat test.input | ./compiler

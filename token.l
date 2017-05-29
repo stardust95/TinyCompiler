@@ -26,9 +26,10 @@ static FILE* yyparse_file_ptr;
 %%
 
 [ \t\r\n]				;
+"return"                return TOKEN(TRETURN);
 [a-zA-Z_][a-zA-Z0-9_]*	SAVE_TOKEN; return TIDENTIFIER;
-[0-9]+.[0-9]*			SAVE_TOKEN; return TDOUBLE;
-[0-9]+					SAVE_TOKEN; return TINTEGER;
+[0-9]+\.[0-9]*			SAVE_TOKEN; return TDOUBLE;
+[0-9]+  				SAVE_TOKEN; return TINTEGER;
 "="						return TOKEN(TEQUAL);
 "=="					return TOKEN(TCEQ);
 "!="                    return TOKEN(TCNE);

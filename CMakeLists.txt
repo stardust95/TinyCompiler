@@ -13,6 +13,6 @@ set(SOURCE_FILES
         Makefile
         test.input
         token.cpp
-        token.l CodeGen.cpp)
+        token.l CodeGen.cpp utils.cpp)
 
 add_executable(TinyCompiler ${SOURCE_FILES})
