@@ -476,7 +476,7 @@ static const yytype_uint8 yyrline[] =
       52,    53,    55,    56,    58,    59,    61,    66,    67,    68,
       72,    74,    75,    77,    78,    79,    80,    81,    82,    83,
       86,    88,    89,    90,    91,    91,    91,    91,    91,    91,
-      92,    92,    92,    92,    94,    95,    97,   100
+      92,    92,    92,    92,    94,    95,    97,    99
 };
 #endif
 
@@ -1500,7 +1500,7 @@ yyreduce:
     break;
 
   case 47:
-#line 100 "grammar.y" /* yacc.c:1661  */
+#line 99 "grammar.y" /* yacc.c:1661  */
     { (yyval.stmt) = new NForStatement(*(yyvsp[0].block), nullptr, (yyvsp[-2].expr), nullptr); }
 #line 1506 "grammar.cpp" /* yacc.c:1661  */
     break;
@@ -1734,4 +1734,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 102 "grammar.y" /* yacc.c:1906  */
+#line 101 "grammar.y" /* yacc.c:1906  */

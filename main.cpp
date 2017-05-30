@@ -1,13 +1,14 @@
 #include <iostream>
 #include "ASTNodes.h"
 #include "CodeGen.h"
+#include "ObjGen.h"
 
 extern NBlock* programBlock;
 extern int yyparse();
 // extern void yyparse_init(const char* filename);
 // extern void yyparse_cleanup();
-
-void createCoreFunctions(CodeGenContext& context);
+//
+//void createCoreFunctions(CodeGenContext& context);
 
 int main(int argc, char **argv) {
     yyparse();
@@ -18,7 +19,7 @@ int main(int argc, char **argv) {
     CodeGenContext context;
 //    createCoreFunctions(context);
     context.generateCode(*programBlock);
-
+    ObjGen(context);
 
     return 0;
 }

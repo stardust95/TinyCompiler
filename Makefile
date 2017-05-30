@@ -5,14 +5,17 @@ OBJS = grammar.o \
 		CodeGen.o \
 		utils.o \
 		main.o	 \
+		ObjGen.o \
 
-LLVMCONFIG = llvm-config
+LLVMCONFIG = llvm-config-3.9
 CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11 -Wdeprecated-register
 LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
 LIBS = `$(LLVMCONFIG) --libs`
 
 clean:
 	$(RM) -rf grammar.cpp grammar.hpp compiler tokens.cpp *.output $(OBJS)
+
+ObjGen.cpp: ObjGen.h
 
 CodeGen.cpp: CodeGen.h
 

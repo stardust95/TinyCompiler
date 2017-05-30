@@ -106,12 +106,16 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
     if( !dst ){
         return LogErrorV("Undeclared variable");
     }
-    Value* exp = exp = this->rhs.codeGen(context);;
+    Value* exp = exp = this->rhs.codeGen(context);
 
-    if( dstType == "int" && ISTYPE(exp, Type::DoubleTyID) ){            // since dst.llvm::type is pointerTy
-        exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(getGlobalContext()));
+    if( dstType == "int" ){            // since dst.llvm::type is pointerTy
+        if( ISTYPE(exp, Type::DoubleTyID) )
+            exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(getGlobalContext()));
+        else if( ISTYPE(exp, Type::IntegerTyID) )
+            exp = context.builder.CreateIntCast(exp, Type::getInt64Ty(getGlobalContext()), true);
+        else
+            return LogErrorV("TODO");
     }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
-
         exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(getGlobalContext()));
     }
 
