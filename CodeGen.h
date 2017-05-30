@@ -8,6 +8,7 @@
 #include <llvm/IR/Module.h>
 
 #include <stack>
+#include <vector>
 #include <memory>
 #include <string>
 #include <map>
@@ -17,8 +18,6 @@
 using namespace llvm;
 using std::unique_ptr;
 using std::string;
-
-static const int INTBITS = 64;
 
 using SymTable = std::map<string, Value*>;
 
@@ -32,7 +31,7 @@ public:
 
 class CodeGenContext{
 private:
-    std::stack<CodeGenBlock*> blockStack;
+    std::vector<CodeGenBlock*> blockStack;
 
 public:
     LLVMContext llvmContext;
@@ -44,39 +43,78 @@ public:
         theModule = unique_ptr<Module>(new Module("main", getGlobalContext()));
     }
 
-    SymTable& locals() const{
-        return blockStack.top()->locals;
-    };
+//    SymTable& locals() const{
+//        return blockStack.top()->locals;
+//    };
 
-    std::map<string, string>& types() const{
-        return blockStack.top()->types;
-    };
+//    std::map<string, string>& types() const{
+//        return blockStack.back()->types;
+//    };
 
+    Value* getSymbolValue(string name) const{
+        for(auto it=blockStack.rbegin(); it!=blockStack.rend(); it++){
+//            cout << "(*it)->locals[" << name << "] = " << (*it)->locals[name] << endl;
+            if( (*it)->locals.find(name) != (*it)->locals.end() ){
+                return (*it)->locals[name];
+            }
+        }
+        return nullptr;
+    }
+
+    string getSymbolType(string name) const{
+        for(auto it=blockStack.rbegin(); it!=blockStack.rend(); it++){
+//            cout << "(*it)->locals[" << name << "] = " << (*it)->locals[name] << endl;
+            if( (*it)->types.find(name) != (*it)->types.end() ){
+                return (*it)->types[name];
+            }
+        }
+        return "";
+    }
+
+    void setSymbolValue(string name, Value* value){
+        blockStack.back()->locals[name] = value;
+    }
+
+    void setSymbolType(string name, string value){
+        blockStack.back()->types[name] = value;
+    }
 
 
     BasicBlock* currentBlock() const{
-        return blockStack.top()->block;
+        return blockStack.back()->block;
     }
 
     void pushBlock(BasicBlock * block){
         CodeGenBlock * codeGenBlock = new CodeGenBlock();
         codeGenBlock->block = block;
         codeGenBlock->returnValue = nullptr;
-        blockStack.push(codeGenBlock);
+        blockStack.push_back(codeGenBlock);
     }
 
     void popBlock(){
-        CodeGenBlock * codeGenBlock = blockStack.top();
-        blockStack.pop();
+        CodeGenBlock * codeGenBlock = blockStack.back();
+        blockStack.pop_back();
         delete codeGenBlock;
     }
 
     void setCurrentReturnValue(Value* value){
-        blockStack.top()->returnValue = value;
+        blockStack.back()->returnValue = value;
     }
 
     Value* getCurrentReturnValue(){
-        return blockStack.top()->returnValue;
+        return blockStack.back()->returnValue;
+    }
+
+    void PrintSymTable() const{
+        cout << "======= Print Symbol Table ========" << endl;
+        string prefix = "";
+        for(auto it=blockStack.begin(); it!=blockStack.end(); it++){
+            for(auto it2=(*it)->locals.begin(); it2!=(*it)->locals.end(); it2++){
+                cout << prefix << it2->first << " = " << it2->second << ": " << this->getSymbolType(it2->first) << endl;
+            }
+            prefix += "\t";
+        }
+        cout << "===================================" << endl;
     }
 
     void generateCode(NBlock& );
@@ -86,6 +124,7 @@ public:
 };
 
 Value* LogErrorV(const char* str);
+Value* LogErrorV(string str);
 
 //llvm::Value* NAssignment::codeGen(CodeGenContext &context) ;
 //

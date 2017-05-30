@@ -16,7 +16,9 @@
 #define ISTYPE(value, id) (value->getType()->getTypeID() == id)
 
 /*
- * TODO: 1. type upgrade in assign
+ * TODO: 1. for, while loop
+ *       2. obj code
+ *       3. struct define
  *
  *
  */
@@ -53,14 +55,6 @@ static string llvmTypeToStr(Value* value){
     }
 }
 
-static void PrintSymTable(SymTable table){
-    cout << "======= Print Symbol Table ========" << endl;
-    for(auto it=table.begin(); it!=table.end(); it++){
-        cout << it->first << " = " << it->second << endl;
-    }
-    cout << "===================================" << endl;
-}
-
 static Type* TypeOf(const NIdentifier & type){        // get llvm::type of variable base on its identifier
     cout << "TypeOf " << type.name << endl;
     if( type.name.compare("int") == 0 ){
@@ -94,21 +88,22 @@ void CodeGenContext::generateCode(NBlock& root) {
 
 llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
     cout << "Generating assignment of " << this->lhs.name << " = " << endl;
-    if( context.locals().find(this->lhs.name) == context.locals().end() ){
+    Value* dst = context.getSymbolValue(this->lhs.name);
+    string dstType = context.getSymbolType(this->lhs.name);
+    if( !dst ){
         return LogErrorV("Undeclared variable");
     }
-    Value* dst = context.locals()[this->lhs.name];
     Value* exp = exp = this->rhs.codeGen(context);;
-    string dstType = context.types()[this->lhs.name];
 
-    if( dstType == "int" && (exp->getType()->getTypeID() == Type::DoubleTyID) ){
+    if( dstType == "int" && ISTYPE(exp, Type::DoubleTyID) ){            // since dst.llvm::type is pointerTy
         exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(getGlobalContext()));
-    }else if( dstType == "double" && (exp->getType()->getTypeID() == Type::IntegerTyID) ){
+    }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
+
         exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(getGlobalContext()));
     }
 
-//    cout << "dst typeid = " << dst->getType()->getTypeID() << endl;
-//    cout << "exp typeid = " << exp->getType()->getTypeID() << ":" << (exp->getType()->getTypeID() == Type::IntegerTyID) << endl;
+    cout << "dst typeid = " << llvmTypeToStr(dst) << endl;
+    cout << "exp typeid = " << llvmTypeToStr(exp) << ":" << (exp->getType()->getTypeID() == Type::IntegerTyID) << endl;
 
 //    lhs.print("lhs: ");
 //    rhs.print("rhs: ");
@@ -188,11 +183,12 @@ llvm::Value* NDouble::codeGen(CodeGenContext &context) {
 
 llvm::Value* NIdentifier::codeGen(CodeGenContext &context) {
     cout << "Generating identifier " << this->name << endl;
-    if( context.locals().find(this->name) == context.locals().end() ){
-        LogErrorV("Unknown variable name");
+    Value* value = context.getSymbolValue(this->name);
+    if( !value ){
+        LogErrorV("Unknown variable name " + this->name);
     }
 //    return new LoadInst(context.locals()[this->name], "", false, context.currentBlock());
-    return context.builder.CreateLoad(context.locals()[this->name], false, "");
+    return context.builder.CreateLoad(value, false, "");
 }
 
 llvm::Value* NExpressionStatement::codeGen(CodeGenContext &context) {
@@ -264,10 +260,11 @@ llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
     Type* type = TypeOf(this->type);
 
     AllocaInst* inst = context.builder.CreateAlloca(type);
-    context.types()[this->id.name] = this->type.name;
+//    context.types()[this->id.name] = this->type.name;
 
-    context.locals()[this->id.name] = inst;
-    PrintSymTable(context.locals());
+    context.setSymbolType(this->id.name, this->type.name);
+    context.setSymbolValue(this->id.name, inst);
+    context.PrintSymTable();
     if( this->assignmentExpr ){
         NAssignment assignment(this->id, *(this->assignmentExpr));
         assignment.codeGen(context);
@@ -342,15 +339,19 @@ llvm::Value* NIfStatement::codeGen(CodeGenContext &context) {
 }
 
 
-
 /*
  * Global Functions
  *
  */
 
+
 std::unique_ptr<NExpression> LogError(const char *str) {
     fprintf(stderr, "LogError: %s\n", str);
     return nullptr;
+}
+
+Value *LogErrorV(string str){
+    return LogErrorV(str.c_str());
 }
 
 Value *LogErrorV(const char *str) {

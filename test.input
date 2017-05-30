@@ -1,6 +1,5 @@
 int do_math(int a) {
   int x = a * 5
-  double b = x < 2
   return x
 }
 
@@ -8,7 +7,10 @@ int main(){
     double a = 0.0
     double b = 1 + 0.0
     if( a < b ){
-        b = a
+        int x = 3.2
+        b = x
+    }else{
+        b = 3
     }
     int c = do_math(1)
     return c
