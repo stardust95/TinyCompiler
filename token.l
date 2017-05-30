@@ -29,6 +29,8 @@ static FILE* yyparse_file_ptr;
 "if"                    return TOKEN(TIF);
 "else"                  return TOKEN(TELSE);
 "return"                return TOKEN(TRETURN);
+"for"                   return TOKEN(TFOR);
+"while"                 return TOKEN(TWHILE);
 [a-zA-Z_][a-zA-Z0-9_]*	SAVE_TOKEN; return TIDENTIFIER;
 [0-9]+\.[0-9]*			SAVE_TOKEN; return TDOUBLE;
 [0-9]+  				SAVE_TOKEN; return TINTEGER;
@@ -49,6 +51,9 @@ static FILE* yyparse_file_ptr;
 "-"                     return TOKEN(TMINUS);
 "*"                     return TOKEN(TMUL);
 "/"                     return TOKEN(TDIV);
+";"                     return TOKEN(TSEMICOLON);
 .						printf("Unknown token:%s\n", yytext); yyterminate();
+
+
 
 %%

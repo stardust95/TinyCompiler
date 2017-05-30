@@ -23,16 +23,16 @@
 }
 %token <string> TIDENTIFIER TINTEGER TDOUBLE
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL
-%token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT
+%token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON
 %token <token> TPLUS TMINUS TMUL TDIV
 %token <token> TIF TELSE TFOR TWHILE TRETURN
 
 %type <ident> ident
-%type <expr> numeric expr
+%type <expr> numeric expr assign
 %type <varvec> func_decl_args
 %type <exprvec> call_args
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl if_stmt
+%type <stmt> stmt var_decl func_decl if_stmt for_stmt while_stmt
 %type <token> comparison
 
 %left TPLUS TMINUS
@@ -49,6 +49,8 @@ stmt : var_decl | func_decl
 		 | expr { $$ = new NExpressionStatement(*$1); }
 		 | TRETURN expr { $$ = new NReturnStatement(*$2); }
 		 | if_stmt
+		 | for_stmt
+		 | while_stmt
 		 ;
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
@@ -72,13 +74,17 @@ ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
 numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 				| TDOUBLE { $$ = new NDouble(atof($1->c_str())); delete $1; }
 				;
-expr : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
+expr : 	assign { $$ = $1; }
 		 | ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
 		 | ident { $<ident>$ = $1; }
 		 | numeric
 		 | expr comparison expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
+		 | { $$ = nullptr; }
 		 ;
+
+assign : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
+
 call_args : /* blank */ { $$ = new ExpressionList(); }
 					| expr { $$ = new ExpressionList(); $$->push_back($1); }
 					| call_args TCOMMA expr { $1->push_back($3); }
@@ -87,4 +93,9 @@ comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
 					 ;
 if_stmt : TIF expr block { $$ = new NIfStatement(*$2, $3); }
 		| TIF expr block TELSE block { $$ = new NIfStatement(*$2, $3, $5); }
+
+for_stmt : TFOR TLPAREN expr TSEMICOLON expr TSEMICOLON expr TRPAREN block { $$ = new NForStatement(*$9, $3, $5, $7); }
+		
+while_stmt : TWHILE TLPAREN expr TRPAREN block { $$ = new NForStatement(*$5, nullptr, $3, nullptr); }
+
 %%

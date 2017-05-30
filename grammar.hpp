@@ -61,15 +61,16 @@ extern int yydebug;
     TRBRACE = 271,
     TCOMMA = 272,
     TDOT = 273,
-    TPLUS = 274,
-    TMINUS = 275,
-    TMUL = 276,
-    TDIV = 277,
-    TIF = 278,
-    TELSE = 279,
-    TFOR = 280,
-    TWHILE = 281,
-    TRETURN = 282
+    TSEMICOLON = 274,
+    TPLUS = 275,
+    TMINUS = 276,
+    TMUL = 277,
+    TDIV = 278,
+    TIF = 279,
+    TELSE = 280,
+    TFOR = 281,
+    TWHILE = 282,
+    TRETURN = 283
   };
 #endif
 
@@ -91,7 +92,7 @@ union YYSTYPE
 	std::string* string;
 	int token;
 
-#line 95 "grammar.hpp" /* yacc.c:1915  */
+#line 96 "grammar.hpp" /* yacc.c:1915  */
 };
 
 typedef union YYSTYPE YYSTYPE;

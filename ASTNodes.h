@@ -344,6 +344,41 @@ public:
 
 };
 
+class NForStatement: public NStatement{
+public:
+    NExpression * initial, * condition, * increment;
+    NBlock & block;
+
+    NForStatement(NBlock& b, NExpression* init = nullptr, NExpression* cond = nullptr, NExpression* incre = nullptr)
+            : block(b), initial(init), condition(cond), increment(incre){
+        if( condition == nullptr ){
+            condition = new NInteger(1);
+        }
+    }
+
+    string getTypeName() const override{
+        return "NForStatement";
+    }
+
+    void print(string prefix) const override{
+
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        if( initial )
+            initial->print(nextPrefix);
+        if( condition )
+            condition->print(nextPrefix);
+        if( increment )
+            increment->print(nextPrefix);
+
+        block.print(nextPrefix);
+    }
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+};
+
 std::unique_ptr<NExpression> LogError(const char* str);
 
 #endif
