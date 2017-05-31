@@ -3,7 +3,7 @@ int do_math(int a) {
   return x
 }
 
-int main(){
+int test(){
     int a = 2
     double b = 1 + 0.0
     if( a < b ){
@@ -20,6 +20,6 @@ int main(){
         b = 2
     }
 
-    int c = do_math(1)
+    int c = do_math(b)
     return c
 }

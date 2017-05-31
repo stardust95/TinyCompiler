@@ -60,7 +60,7 @@ static string llvmTypeToStr(Value* value){
 static Type* TypeOf(const NIdentifier & type, CodeGenContext & context){        // get llvm::type of variable base on its identifier
     cout << "TypeOf " << type.name << endl;
     if( type.name.compare("int") == 0 ){
-        return Type::getInt64Ty(context.llvmContext);
+        return Type::getInt32Ty(context.llvmContext);
     }else if( type.name.compare("double") == 0 ){
         return Type::getDoubleTy(context.llvmContext);
     }else{
@@ -86,7 +86,7 @@ void CodeGenContext::generateCode(NBlock& root) {
 
     std::vector<Type*> sysArgs;
     FunctionType* mainFuncType = FunctionType::get(Type::getVoidTy(this->llvmContext), makeArrayRef(sysArgs), false);
-    Function* mainFunc = Function::Create(mainFuncType, GlobalValue::InternalLinkage, "main");
+    Function* mainFunc = Function::Create(mainFuncType, GlobalValue::ExternalLinkage, "main");
     BasicBlock* block = BasicBlock::Create(this->llvmContext, "entry");
 
     pushBlock(block);
@@ -112,9 +112,9 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
 
     if( dstType == "int" ){            // since dst.llvm::type is pointerTy
         if( ISTYPE(exp, Type::DoubleTyID) )
-            exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(context.llvmContext));
+            exp = context.builder.CreateFPToUI(exp, Type::getInt32Ty(context.llvmContext));
         else if( ISTYPE(exp, Type::IntegerTyID) )
-            exp = context.builder.CreateIntCast(exp, Type::getInt64Ty(context.llvmContext), true);
+            exp = context.builder.CreateIntCast(exp, Type::getInt32Ty(context.llvmContext), true);
         else
             return LogErrorV("TODO");
     }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
@@ -190,7 +190,7 @@ llvm::Value* NBlock::codeGen(CodeGenContext &context) {
 
 llvm::Value* NInteger::codeGen(CodeGenContext &context) {
     cout << "Generating Integer: " << this->value << endl;
-    return ConstantInt::get(Type::getInt64Ty(context.llvmContext), this->value, true);
+    return ConstantInt::get(Type::getInt32Ty(context.llvmContext), this->value, true);
 //    return ConstantInt::get(context.llvmContext, APInt(INTBITS, this->value, true));
 }
 
@@ -222,7 +222,7 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
         argTypes.push_back(TypeOf(arg->type, context));
     }
     FunctionType* functionType = FunctionType::get(TypeOf(this->type, context), argTypes, false);
-    Function* function = Function::Create(functionType, GlobalValue::InternalLinkage, this->id.name.c_str(), context.theModule.get());
+    Function* function = Function::Create(functionType, GlobalValue::ExternalLinkage, this->id.name.c_str(), context.theModule.get());
     BasicBlock* basicBlock = BasicBlock::Create(context.llvmContext, "entry", function, nullptr);
 
     context.builder.SetInsertPoint(basicBlock);
