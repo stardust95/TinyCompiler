@@ -70,7 +70,8 @@ extern int yydebug;
     TELSE = 280,
     TFOR = 281,
     TWHILE = 282,
-    TRETURN = 283
+    TRETURN = 283,
+    TSTRUCT = 284
   };
 #endif
 
@@ -92,7 +93,7 @@ union YYSTYPE
 	std::string* string;
 	int token;
 
-#line 96 "grammar.hpp" /* yacc.c:1915  */
+#line 97 "grammar.hpp" /* yacc.c:1915  */
 };
 
 typedef union YYSTYPE YYSTYPE;

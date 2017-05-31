@@ -25,14 +25,14 @@
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL
 %token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON
 %token <token> TPLUS TMINUS TMUL TDIV
-%token <token> TIF TELSE TFOR TWHILE TRETURN
+%token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
 %type <ident> ident
 %type <expr> numeric expr assign
-%type <varvec> func_decl_args
+%type <varvec> func_decl_args struct_members
 %type <exprvec> call_args
 %type <block> program stmts block
-%type <stmt> stmt var_decl func_decl if_stmt for_stmt while_stmt
+%type <stmt> stmt var_decl func_decl struct_decl if_stmt for_stmt while_stmt
 %type <token> comparison
 
 %left TPLUS TMINUS
@@ -45,7 +45,7 @@ program : stmts { programBlock = $1; }
 stmts : stmt { $$ = new NBlock(); $$->statements.push_back($<stmt>1); }
 			| stmts stmt { $1->statements.push_back($<stmt>2); }
 			;
-stmt : var_decl | func_decl
+stmt : var_decl | func_decl | struct_decl
 		 | expr { $$ = new NExpressionStatement(*$1); }
 		 | TRETURN expr { $$ = new NReturnStatement(*$2); }
 		 | if_stmt
@@ -97,5 +97,11 @@ if_stmt : TIF expr block { $$ = new NIfStatement(*$2, $3); }
 for_stmt : TFOR TLPAREN expr TSEMICOLON expr TSEMICOLON expr TRPAREN block { $$ = new NForStatement(*$9, $3, $5, $7); }
 		
 while_stmt : TWHILE TLPAREN expr TRPAREN block { $$ = new NForStatement(*$5, nullptr, $3, nullptr); }
+
+struct_decl : TSTRUCT ident TLBRACE struct_members TRBRACE { $$ = new NStructDeclaration(*$2, *$4); delete $4; }
+
+struct_members : /* blank */ { $$ = new VariableList(); }
+				| var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
+				| struct_members var_decl { $1->push_back($<var_decl>2); }
 
 %%

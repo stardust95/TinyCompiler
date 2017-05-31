@@ -12,60 +12,21 @@
 //#include <llvm/IR/Verifier.h>
 #include "CodeGen.h"
 #include "ASTNodes.h"
+#include "TypeSystem.h"
 
 #define ISTYPE(value, id) (value->getType()->getTypeID() == id)
 
 /*
- * TODO: 1. for, while loop
- *       2. obj code
- *       3. struct define
+ * TODO: 1. struct define
+ *       2. array type
  *
  *
  */
 
 
-static string llvmTypeToStr(Value* value){
-    Type::TypeID typeID;
-    if( value )
-        typeID = value->getType()->getTypeID();
-    else
-        return "Value is nullptr";
-
-    switch (typeID){
-        case Type::VoidTyID:
-            return "VoidTyID";
-        case Type::HalfTyID:
-            return "HalfTyID";
-        case Type::FloatTyID:
-            return "FloatTyID";
-        case Type::DoubleTyID:
-            return "DoubleTyID";
-        case Type::IntegerTyID:
-            return "IntegerTyID";
-        case Type::FunctionTyID:
-            return "FunctionTyID";
-        case Type::StructTyID:
-            return "StructTyID";
-        case Type::ArrayTyID:
-            return "ArrayTyID";
-        case Type::PointerTyID:
-            return "PointerTyID";
-        case Type::VectorTyID:
-            return "VectorTyID";
-        default:
-            return "Unknown";
-    }
-}
-
-static Type* TypeOf(const NIdentifier & type, CodeGenContext & context){        // get llvm::type of variable base on its identifier
-    cout << "TypeOf " << type.name << endl;
-    if( type.name.compare("int") == 0 ){
-        return Type::getInt32Ty(context.llvmContext);
-    }else if( type.name.compare("double") == 0 ){
-        return Type::getDoubleTy(context.llvmContext);
-    }else{
-        return Type::getVoidTy(context.llvmContext);
-    }
+//
+static Type* TypeOf(const NIdentifier & type, CodeGenContext& context){        // get llvm::type of variable base on its identifier
+    return context.typeSystem.getVarType(type.name);
 }
 
 Value* CastToBoolean(CodeGenContext& context, Value* condValue){
@@ -110,24 +71,23 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
     }
     Value* exp = exp = this->rhs.codeGen(context);
 
-    if( dstType == "int" ){            // since dst.llvm::type is pointerTy
-        if( ISTYPE(exp, Type::DoubleTyID) )
-            exp = context.builder.CreateFPToUI(exp, Type::getInt32Ty(context.llvmContext));
-        else if( ISTYPE(exp, Type::IntegerTyID) )
-            exp = context.builder.CreateIntCast(exp, Type::getInt32Ty(context.llvmContext), true);
-        else
-            return LogErrorV("TODO");
-    }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
-        exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(context.llvmContext));
-    }
+//    if( dstType == "int" ){            // notice that dst.llvm::type is pointerTy
+//        if( ISTYPE(exp, Type::DoubleTyID) )
+//            exp = context.builder.CreateFPToUI(exp, Type::getInt32Ty(context.llvmContext));
+//        else if( ISTYPE(exp, Type::IntegerTyID) )
+//            exp = context.builder.CreateIntCast(exp, Type::getInt32Ty(context.llvmContext), true);
+//        else
+//            return LogErrorV("TODO");
+//    }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
+//        exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(context.llvmContext));
+//    }
 
-    cout << "dst typeid = " << llvmTypeToStr(dst) << endl;
-    cout << "exp typeid = " << llvmTypeToStr(exp) << ":" << (exp->getType()->getTypeID() == Type::IntegerTyID) << endl;
+    cout << "dst typeid = " << TypeSystem::llvmTypeToStr(context.typeSystem.getVarType(dstType)) << endl;
+    cout << "exp typeid = " << TypeSystem::llvmTypeToStr(exp) << endl;
 
-//    lhs.print("lhs: ");
-//    rhs.print("rhs: ");
+    exp = context.typeSystem.cast(exp, context.typeSystem.getVarType(dstType), context.currentBlock());
+
     return context.builder.CreateStore(exp, dst);
-//    return new StoreInst(exp, dst, false, context.currentBlock());
 }
 
 llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
@@ -151,8 +111,8 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
         return nullptr;
     }
     cout << "fp = " << ( fp ? "true" : "false" ) << endl;
-    cout << "L is " << llvmTypeToStr(L) << endl;
-    cout << "R is " << llvmTypeToStr(R) << endl;
+    cout << "L is " << TypeSystem::llvmTypeToStr(L) << endl;
+    cout << "R is " << TypeSystem::llvmTypeToStr(R) << endl;
 
 
     switch (this->op){
@@ -229,9 +189,6 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
     context.pushBlock(basicBlock);
 
     // declare function params
-//    Function::arg_iterator ir_arg_it = function->arg_begin();
-//    Value* ir_arg;
-
     auto origin_arg = this->arguments.begin();
 
     for(auto &ir_arg_it: function->args()){
@@ -242,14 +199,6 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
         context.setSymbolType((*origin_arg)->id.name, (*origin_arg)->type.name);
         origin_arg++;
     }
-
-//    for(auto& origin_arg_it: this->arguments){
-//        Value* argAlloc = origin_arg_it->codeGen(context);
-//
-//        ir_arg = ir_arg_it++;
-//        ir_arg->setName(origin_arg_it->id.name);
-//        context.builder.CreateStore(ir_arg, argAlloc, false);
-//    }
 
     this->block.codeGen(context);
 
@@ -268,6 +217,25 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
     return function;
 }
 
+
+llvm::Value* NStructDeclaration::codeGen(CodeGenContext& context) {
+    cout << "Generating struct declaration of " << this->name.name << endl;
+
+    std::vector<Type*> memberTypes;
+
+//    context.builder.createstr
+    auto structType = StructType::create(context.llvmContext, this->name.name);
+    context.typeSystem.addStructType(this->name.name, structType);
+
+    for(auto& member: this->members){
+        context.typeSystem.addStructMember(this->name.name, member->type.name, member->id.name);
+        memberTypes.push_back(TypeOf(member->type, context));
+    }
+
+    structType->setBody(memberTypes);
+
+    return nullptr;
+}
 
 llvm::Value* NMethodCall::codeGen(CodeGenContext &context) {
     cout << "Generating method call of " << this->id.name << endl;

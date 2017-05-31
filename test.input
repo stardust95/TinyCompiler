@@ -1,10 +1,15 @@
+struct Point{
+    int x
+    int y
+}
+
 int do_math(int a) {
   int x = a * 5
   return x
 }
 
 int test(){
-    int a = 2
+    int a = 1 < 2
     double b = 1 + 0.0
     if( a < b ){
         int x = 3.2

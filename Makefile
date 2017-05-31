@@ -6,6 +6,7 @@ OBJS = grammar.o \
 		utils.o \
 		main.o	 \
 		ObjGen.o \
+		TypeSystem.o \
 
 LLVMCONFIG = llvm-config-3.9
 CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11 -Wdeprecated-register

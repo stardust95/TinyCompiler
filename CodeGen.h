@@ -14,6 +14,7 @@
 #include <map>
 #include "ASTNodes.h"
 #include "grammar.hpp"
+#include "TypeSystem.h"
 
 using namespace llvm;
 using std::unique_ptr;
@@ -27,6 +28,8 @@ public:
     Value * returnValue;
     std::map<string, Value*> locals;
     std::map<string, string> types;     // type name string of vars
+
+
 };
 
 class CodeGenContext{
@@ -38,18 +41,11 @@ public:
     IRBuilder<> builder;
     unique_ptr<Module> theModule;
     SymTable globalVars;
+    TypeSystem typeSystem;
 
-    CodeGenContext(): builder(llvmContext){
+    CodeGenContext(): builder(llvmContext), typeSystem(llvmContext){
         theModule = unique_ptr<Module>(new Module("main", this->llvmContext));
     }
-
-//    SymTable& locals() const{
-//        return blockStack.top()->locals;
-//    };
-
-//    std::map<string, string>& types() const{
-//        return blockStack.back()->types;
-//    };
 
     Value* getSymbolValue(string name) const{
         for(auto it=blockStack.rbegin(); it!=blockStack.rend(); it++){
@@ -119,7 +115,6 @@ public:
 
     void generateCode(NBlock& );
 
-    void runCode();
 
 };
 

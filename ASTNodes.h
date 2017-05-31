@@ -287,6 +287,33 @@ public:
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
+
+class NStructDeclaration: public NStatement{
+public:
+    const NIdentifier name;
+    VariableList members;
+
+    NStructDeclaration(const NIdentifier& id, const VariableList& arguments)
+            : name(id), members(arguments){
+
+    }
+
+    string getTypeName() const override {
+        return "NStructDeclaration";
+    }
+
+    void print(string prefix) const override {
+        string nextPrefix = prefix+this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << this->name.name << endl;
+
+        for(auto it=members.begin(); it!=members.end(); it++){
+            (*it)->print(nextPrefix);
+        }
+    }
+
+    virtual llvm::Value* codeGen(CodeGenContext& context) override ;
+};
+
 class NReturnStatement: public NStatement{
 public:
     NExpression &expression;
@@ -378,6 +405,8 @@ public:
     llvm::Value *codeGen(CodeGenContext &context) override ;
 
 };
+
+
 
 std::unique_ptr<NExpression> LogError(const char* str);
 

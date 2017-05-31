@@ -51,7 +51,7 @@ extern NBlock* programBlock;
 //    llvm::Constant *format_const = llvm::ConstantDataArray::getString(getGlobalContext(), constValue);
 //    llvm::GlobalVariable *var =
 //            new llvm::GlobalVariable(
-//                    *context.theModule, llvm::ArrayType::get(llvm::IntegerType::get(getGlobalContext(), 8), strlen(constValue)+1),
+//                    *context.theModule, llvm::VarArrayType::get(llvm::IntegerType::get(getGlobalContext(), 8), strlen(constValue)+1),
 //                    true, llvm::GlobalValue::PrivateLinkage, format_const, ".str");
 //    llvm::Constant *zero =
 //            llvm::Constant::getNullValue(llvm::IntegerType::getInt32Ty(getGlobalContext()));
