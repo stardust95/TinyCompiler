@@ -28,11 +28,11 @@ void ObjGen(CodeGenContext & context, const string& filename){
     InitializeAllAsmParsers();
     InitializeAllAsmPrinters();
 
-    auto targetType = sys::getDefaultTargetTriple();
-    context.theModule->setTargetTriple(targetType);
+    auto targetTriple = sys::getDefaultTargetTriple();
+    context.theModule->setTargetTriple(targetTriple);
 
     std::string error;
-    auto Target = TargetRegistry::lookupTarget(targetType, error);
+    auto Target = TargetRegistry::lookupTarget(targetTriple, error);
 
     if( !Target ){
         errs() << error;
@@ -44,10 +44,10 @@ void ObjGen(CodeGenContext & context, const string& filename){
 
     TargetOptions opt;
     auto RM = Optional<Reloc::Model>();
-//    auto RM = Reloc::Model ();
-    auto theTargetMachine = Target->createTargetMachine(targetType, CPU, features, opt, RM);
+    auto theTargetMachine = Target->createTargetMachine(targetTriple, CPU, features, opt, RM);
 
     context.theModule->setDataLayout(theTargetMachine->createDataLayout());
+    context.theModule->setTargetTriple(targetTriple);
 
     std::error_code EC;
     raw_fd_ostream dest(filename.c_str(), EC, sys::fs::F_None);

@@ -40,7 +40,7 @@ public:
     SymTable globalVars;
 
     CodeGenContext(): builder(llvmContext){
-        theModule = unique_ptr<Module>(new Module("main", getGlobalContext()));
+        theModule = unique_ptr<Module>(new Module("main", this->llvmContext));
     }
 
 //    SymTable& locals() const{

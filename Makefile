@@ -33,5 +33,5 @@ token.cpp: token.l grammar.hpp
 compiler: $(OBJS)
 	g++ $(CPPFLAGS) -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
-test: compiler test.input
-	cat test.input | ./compiler
+test: compiler test.c
+	cat test.c | ./compiler

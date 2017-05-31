@@ -9,7 +9,7 @@
 #include <llvm/PassManager.h>
 #include <llvm/IR/IRPrintingPasses.h>
 #include <llvm/Support/raw_ostream.h>
-
+//#include <llvm/IR/Verifier.h>
 #include "CodeGen.h"
 #include "ASTNodes.h"
 
@@ -22,6 +22,8 @@
  *
  *
  */
+
+
 static string llvmTypeToStr(Value* value){
     Type::TypeID typeID;
     if( value )
@@ -55,24 +57,24 @@ static string llvmTypeToStr(Value* value){
     }
 }
 
-static Type* TypeOf(const NIdentifier & type){        // get llvm::type of variable base on its identifier
+static Type* TypeOf(const NIdentifier & type, CodeGenContext & context){        // get llvm::type of variable base on its identifier
     cout << "TypeOf " << type.name << endl;
     if( type.name.compare("int") == 0 ){
-        return Type::getInt64Ty(getGlobalContext());
+        return Type::getInt64Ty(context.llvmContext);
     }else if( type.name.compare("double") == 0 ){
-        return Type::getDoubleTy(getGlobalContext());
+        return Type::getDoubleTy(context.llvmContext);
     }else{
-        return Type::getVoidTy(getGlobalContext());
+        return Type::getVoidTy(context.llvmContext);
     }
 }
 
 Value* CastToBoolean(CodeGenContext& context, Value* condValue){
 
     if( ISTYPE(condValue, Type::IntegerTyID) ){
-        condValue = context.builder.CreateIntCast(condValue, Type::getInt1Ty(getGlobalContext()), true);
-        return context.builder.CreateICmpNE(condValue, ConstantInt::get(Type::getInt1Ty(getGlobalContext()), 0, true));
+        condValue = context.builder.CreateIntCast(condValue, Type::getInt1Ty(context.llvmContext), true);
+        return context.builder.CreateICmpNE(condValue, ConstantInt::get(Type::getInt1Ty(context.llvmContext), 0, true));
     }else if( ISTYPE(condValue, Type::DoubleTyID) ){
-        return context.builder.CreateFCmpONE(condValue, ConstantFP::get(getGlobalContext(), APFloat(0.0)));
+        return context.builder.CreateFCmpONE(condValue, ConstantFP::get(context.llvmContext, APFloat(0.0)));
     }else{
         return condValue;
 //        return LogErrorV("Invalid condition type");
@@ -83,9 +85,9 @@ void CodeGenContext::generateCode(NBlock& root) {
     cout << "Generating IR code" << endl;
 
     std::vector<Type*> sysArgs;
-    FunctionType* mainFuncType = FunctionType::get(Type::getVoidTy(getGlobalContext()), makeArrayRef(sysArgs), false);
+    FunctionType* mainFuncType = FunctionType::get(Type::getVoidTy(this->llvmContext), makeArrayRef(sysArgs), false);
     Function* mainFunc = Function::Create(mainFuncType, GlobalValue::InternalLinkage, "main");
-    BasicBlock* block = BasicBlock::Create(getGlobalContext(), "entry");
+    BasicBlock* block = BasicBlock::Create(this->llvmContext, "entry");
 
     pushBlock(block);
     Value* retValue = root.codeGen(*this);
@@ -110,13 +112,13 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
 
     if( dstType == "int" ){            // since dst.llvm::type is pointerTy
         if( ISTYPE(exp, Type::DoubleTyID) )
-            exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(getGlobalContext()));
+            exp = context.builder.CreateFPToUI(exp, Type::getInt64Ty(context.llvmContext));
         else if( ISTYPE(exp, Type::IntegerTyID) )
-            exp = context.builder.CreateIntCast(exp, Type::getInt64Ty(getGlobalContext()), true);
+            exp = context.builder.CreateIntCast(exp, Type::getInt64Ty(context.llvmContext), true);
         else
             return LogErrorV("TODO");
     }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
-        exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(getGlobalContext()));
+        exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(context.llvmContext));
     }
 
     cout << "dst typeid = " << llvmTypeToStr(dst) << endl;
@@ -138,10 +140,10 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
     if( (L->getType()->getTypeID() == Type::DoubleTyID) || (R->getType()->getTypeID() == Type::DoubleTyID) ){  // type upgrade
         fp = true;
         if( (R->getType()->getTypeID() != Type::DoubleTyID) ){
-            R = context.builder.CreateUIToFP(R, Type::getDoubleTy(getGlobalContext()), "ftmp");
+            R = context.builder.CreateUIToFP(R, Type::getDoubleTy(context.llvmContext), "ftmp");
         }
         if( (L->getType()->getTypeID() != Type::DoubleTyID) ){
-            L = context.builder.CreateUIToFP(L, Type::getDoubleTy(getGlobalContext()), "ftmp");
+            L = context.builder.CreateUIToFP(L, Type::getDoubleTy(context.llvmContext), "ftmp");
         }
     }
 
@@ -188,14 +190,14 @@ llvm::Value* NBlock::codeGen(CodeGenContext &context) {
 
 llvm::Value* NInteger::codeGen(CodeGenContext &context) {
     cout << "Generating Integer: " << this->value << endl;
-    return ConstantInt::get(Type::getInt64Ty(getGlobalContext()), this->value, true);
-//    return ConstantInt::get(getGlobalContext(), APInt(INTBITS, this->value, true));
+    return ConstantInt::get(Type::getInt64Ty(context.llvmContext), this->value, true);
+//    return ConstantInt::get(context.llvmContext, APInt(INTBITS, this->value, true));
 }
 
 llvm::Value* NDouble::codeGen(CodeGenContext &context) {
     cout << "Generating Double: " << this->value << endl;
-    return ConstantFP::get(Type::getDoubleTy(getGlobalContext()), this->value);
-//    return ConstantFP::get(getGlobalContext(), APFloat(this->value));
+    return ConstantFP::get(Type::getDoubleTy(context.llvmContext), this->value);
+//    return ConstantFP::get(context.llvmContext, APFloat(this->value));
 }
 
 llvm::Value* NIdentifier::codeGen(CodeGenContext &context) {
@@ -217,31 +219,45 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
     std::vector<Type*> argTypes;
 
     for(auto &arg: this->arguments){
-        argTypes.push_back(TypeOf(arg->type));
+        argTypes.push_back(TypeOf(arg->type, context));
     }
-    FunctionType* functionType = FunctionType::get(TypeOf(this->type), argTypes, false);
+    FunctionType* functionType = FunctionType::get(TypeOf(this->type, context), argTypes, false);
     Function* function = Function::Create(functionType, GlobalValue::InternalLinkage, this->id.name.c_str(), context.theModule.get());
-    BasicBlock* basicBlock = BasicBlock::Create(getGlobalContext(), "entry", function, nullptr);
+    BasicBlock* basicBlock = BasicBlock::Create(context.llvmContext, "entry", function, nullptr);
 
     context.builder.SetInsertPoint(basicBlock);
     context.pushBlock(basicBlock);
 
     // declare function params
-    Function::arg_iterator ir_arg_it = function->arg_begin();
-    Value* ir_arg;
+//    Function::arg_iterator ir_arg_it = function->arg_begin();
+//    Value* ir_arg;
 
-    for(auto& origin_arg_it: this->arguments){
-        Value* argAlloc = origin_arg_it->codeGen(context);
+    auto origin_arg = this->arguments.begin();
 
-        ir_arg = ir_arg_it++;
-        ir_arg->setName(origin_arg_it->id.name);
-        context.builder.CreateStore(ir_arg, argAlloc, false);
+    for(auto &ir_arg_it: function->args()){
+        ir_arg_it.setName((*origin_arg)->id.name);
+        Value* argAlloc = (*origin_arg)->codeGen(context);
+        context.builder.CreateStore(&ir_arg_it, argAlloc, false);
+        context.setSymbolValue((*origin_arg)->id.name, argAlloc);
+        context.setSymbolType((*origin_arg)->id.name, (*origin_arg)->type.name);
+        origin_arg++;
     }
+
+//    for(auto& origin_arg_it: this->arguments){
+//        Value* argAlloc = origin_arg_it->codeGen(context);
+//
+//        ir_arg = ir_arg_it++;
+//        ir_arg->setName(origin_arg_it->id.name);
+//        context.builder.CreateStore(ir_arg, argAlloc, false);
+//    }
 
     this->block.codeGen(context);
 
     if( context.getCurrentReturnValue() ){
         context.builder.CreateRet(context.getCurrentReturnValue());
+
+//        verifyFunction(*function);
+
     } else{
         return LogErrorV("Function block return value not founded");
     }
@@ -274,7 +290,7 @@ llvm::Value* NMethodCall::codeGen(CodeGenContext &context) {
 
 llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
     cout << "Generating variable declaration of " << this->type.name << " " << this->id.name << endl;
-    Type* type = TypeOf(this->type);
+    Type* type = TypeOf(this->type, context);
 
     AllocaInst* inst = context.builder.CreateAlloca(type);
 //    context.types()[this->id.name] = this->type.name;
@@ -306,9 +322,9 @@ llvm::Value* NIfStatement::codeGen(CodeGenContext &context) {
 
     Function* theFunction = context.builder.GetInsertBlock()->getParent();      // the function where if statement is in
 
-    BasicBlock *thenBB = BasicBlock::Create(getGlobalContext(), "then", theFunction);
-    BasicBlock *falseBB = BasicBlock::Create(getGlobalContext(), "else");
-    BasicBlock *mergeBB = BasicBlock::Create(getGlobalContext(), "ifcont");
+    BasicBlock *thenBB = BasicBlock::Create(context.llvmContext, "then", theFunction);
+    BasicBlock *falseBB = BasicBlock::Create(context.llvmContext, "else");
+    BasicBlock *mergeBB = BasicBlock::Create(context.llvmContext, "ifcont");
 
     if( this->falseBlock ){
         context.builder.CreateCondBr(condValue, thenBB, falseBB);
@@ -359,8 +375,8 @@ llvm::Value* NForStatement::codeGen(CodeGenContext &context) {
 
     Function* theFunction = context.builder.GetInsertBlock()->getParent();
 
-    BasicBlock *block = BasicBlock::Create(getGlobalContext(), "forloop", theFunction);
-    BasicBlock *after = BasicBlock::Create(getGlobalContext(), "forcont");
+    BasicBlock *block = BasicBlock::Create(context.llvmContext, "forloop", theFunction);
+    BasicBlock *after = BasicBlock::Create(context.llvmContext, "forcont");
 
     // execute the initial
     if( this->initial )
