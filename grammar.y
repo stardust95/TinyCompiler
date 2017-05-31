@@ -23,8 +23,8 @@
 }
 %token <string> TIDENTIFIER TINTEGER TDOUBLE
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL
-%token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON
-%token <token> TPLUS TMINUS TMUL TDIV
+%token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON TLBRACKET TRBRACKET
+%token <token> TPLUS TMINUS TMUL TDIV TAND TOR TXOR TMOD TNEG TNOT TSHIFTL TSHIFTR
 %token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
 %type <ident> ident
@@ -55,6 +55,7 @@ stmt : var_decl | func_decl | struct_decl
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
+
 var_decl : ident ident { $$ = new NVariableDeclaration(*$1, *$2, nullptr); }
 				 | ident ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, *$2, $4); }
 				 ;
@@ -81,6 +82,7 @@ expr : 	assign { $$ = $1; }
 		 | numeric
 		 | expr comparison expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
+		 | TMINUS expr { $$ = nullptr; /* TODO */ }
 		 | { $$ = nullptr; }
 		 ;
 
@@ -92,7 +94,7 @@ call_args : /* blank */ { $$ = new ExpressionList(); }
 					| expr { $$ = new ExpressionList(); $$->push_back($1); }
 					| call_args TCOMMA expr { $1->push_back($3); }
 comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
-					 | TPLUS | TMINUS | TMUL | TDIV
+					 | TPLUS | TMINUS | TMUL | TDIV | TAND | TMOD | TOR | TXOR | TSHIFTL | TSHIFTR
 					 ;
 if_stmt : TIF expr block { $$ = new NIfStatement(*$2, $3); }
 		| TIF expr block TELSE block { $$ = new NIfStatement(*$2, $3, $5); }

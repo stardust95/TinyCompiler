@@ -17,9 +17,11 @@
 #define ISTYPE(value, id) (value->getType()->getTypeID() == id)
 
 /*
- * TODO: 1. struct variable declare, member assign
- *       2. array type
- *       3. fix memory leaks
+ * TODO: 1. array type
+ *       2. fix memory leaks  <- share pointer
+ *       3. unary ops
+ *       4. variable declaration list
+ *       5. char, string, bool types
  *
  *
  */
@@ -111,6 +113,19 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
             return fp ? context.builder.CreateFSub(L, R, "subftmp") : context.builder.CreateSub(L, R, "subtmp");
         case TMUL:
             return fp ? context.builder.CreateFMul(L, R, "mulftmp") : context.builder.CreateMul(L, R, "multmp");
+        case TDIV:
+            return fp ? context.builder.CreateFDiv(L, R, "divftmp") : context.builder.CreateSDiv(L, R, "divtmp");
+        case TAND:
+            return fp ? LogErrorV("Double type has no AND operation") : context.builder.CreateAnd(L, R, "andtmp");
+        case TOR:
+            return fp ? LogErrorV("Double type has no OR operation") : context.builder.CreateOr(L, R, "ortmp");
+        case TXOR:
+            return fp ? LogErrorV("Double type has no XOR operation") : context.builder.CreateXor(L, R, "xortmp");
+        case TSHIFTL:
+            return fp ? LogErrorV("Double type has no LEFT SHIFT operation") : context.builder.CreateShl(L, R, "shltmp");
+        case TSHIFTR:
+            return fp ? LogErrorV("Double type has no RIGHT SHIFT operation") : context.builder.CreateAShr(L, R, "ashrtmp");
+
         case TCLT:
             return fp ? context.builder.CreateFCmpULT(L, R, "cmpftmp") : context.builder.CreateICmpULT(L, R, "cmptmp");
         case TCLE:
@@ -373,23 +388,39 @@ llvm::Value* NForStatement::codeGen(CodeGenContext &context) {
 }
 
 llvm::Value *NStructMember::codeGen(CodeGenContext &context) {
+    cout << "Generating struct member expression of " << this->id.name << "." << this->member.name << endl;
 
-    return nullptr;
-}
+    auto varPtr = context.getSymbolValue(this->id.name);
+    auto structPtr = context.builder.CreateLoad(varPtr, "structPtr");
+    structPtr->setAlignment(4);
 
-llvm::Value* NStructAssignment::codeGen(CodeGenContext &context) {
-    cout << "Generating struct assignment of " << this->structMember.id.name << endl;
-    auto varPtr = context.getSymbolValue(this->structMember.id.name);
-    auto load = context.builder.CreateLoad(varPtr, "structPtr");
-//    auto underlyingStruct = context.builder.CreateLoad(load);
-    load->setAlignment(4);
-
-
-    if( !load->getType()->isStructTy() ){
+    if( !structPtr->getType()->isStructTy() ){
         return LogErrorV("The variable is not struct");
     }
 
-    string structName = load->getType()->getStructName().str();
+    string structName = structPtr->getType()->getStructName().str();
+    long memberIndex = context.typeSystem.getStructMemberIndex(structName, this->member.name);
+
+    std::vector<Value*> indices;
+    indices.push_back(ConstantInt::get(context.typeSystem.intTy, 0, false));
+    indices.push_back(ConstantInt::get(context.typeSystem.intTy, (uint64_t)memberIndex, false));
+    auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "memberPtr");
+
+    return context.builder.CreateLoad(ptr);
+}
+
+llvm::Value* NStructAssignment::codeGen(CodeGenContext &context) {
+    cout << "Generating struct assignment of " << this->structMember.id.name << "." << this->structMember.member.name << endl;
+    auto varPtr = context.getSymbolValue(this->structMember.id.name);
+    auto structPtr = context.builder.CreateLoad(varPtr, "structPtr");
+//    auto underlyingStruct = context.builder.CreateLoad(load);
+    structPtr->setAlignment(4);
+
+    if( !structPtr->getType()->isStructTy() ){
+        return LogErrorV("The variable is not struct");
+    }
+
+    string structName = structPtr->getType()->getStructName().str();
     long memberIndex = context.typeSystem.getStructMemberIndex(structName, this->structMember.member.name);
 
     std::vector<Value*> indices;

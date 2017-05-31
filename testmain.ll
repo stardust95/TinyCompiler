@@ -3,13 +3,13 @@ source_filename = "testmain.cpp"
 target datalayout = "e-m:o-i64:64-f80:128-n8:16:32:64-S128"
 target triple = "x86_64-apple-macosx10.12.0"
 
-%struct.Point = type { i32, i32 }
-
 ; Function Attrs: norecurse nounwind ssp uwtable
 define i32 @main() #0 {
-  %1 = alloca %struct.Point, align 4
-  %2 = getelementptr inbounds %struct.Point, %struct.Point* %1, i32 0, i32 0
-  store i32 123456, i32* %2, align 4
+  %1 = alloca [9 x i32], align 16
+  %2 = getelementptr inbounds [9 x i32], [9 x i32]* %1, i64 0, i64 8
+  %3 = load i32, i32* %2, align 16
+  %4 = getelementptr inbounds [9 x i32], [9 x i32]* %1, i64 0, i64 7
+  store i32 %3, i32* %4, align 4
   ret i32 0
 }
 

@@ -10,7 +10,7 @@ struct Point{
 };
 
 int main() {
-	Point p;
-	p.x = 123456;
+	int a[9];
+	a[7] = a[8];	
 //	std::cout << "domath: " << do_math(1) << std::endl;
 }
