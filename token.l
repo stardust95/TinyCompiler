@@ -28,7 +28,7 @@ static FILE* yyparse_file_ptr;
 [ \t\r\n]				;
 "if"                    return TOKEN(TIF);
 "else"                  return TOKEN(TELSE);
-"return"                return TOKEN(TRETURN);
+"return"                 return TOKEN(TRETURN);
 "for"                   return TOKEN(TFOR);
 "while"                 return TOKEN(TWHILE);
 "struct"                return TOKEN(TSTRUCT);

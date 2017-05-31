@@ -82,34 +82,17 @@ void TypeSystem::addStructType(string name, llvm::StructType *type) {
     this->_structMembers[name] = std::vector<TypeNamePair>();
 }
 
-Type *TypeSystem::getVarType(string typeStr) {
-    if( typeStr.compare("int") == 0 ){
-        return this->intTy;
-    }
-    if( typeStr.compare("float") == 0 ){
-        return this->floatTy;
-    }
-    if( typeStr.compare("double") == 0 ){
-        return this->doubleTy;
-    }
-    if( typeStr.compare("bool") == 0 ){
-        return this->boolTy;
-    }
-    if( typeStr.compare("char") == 0 ){
-        return this->charTy;
-    }
-    if( typeStr.compare("void") == 0 ){
-        return this->voidTy;
-    }
-    if( typeStr.compare("string") == 0 ){
-        return this->stringTy;
-    }
+Type *TypeSystem::getVarType(const NIdentifier& type) {
+    assert(type.isType);
+    if( type.isArray )
+        return ArrayType::get(getVarType(type.name), type.arraySize->value);
 
-    if( this->_structTypes.find(typeStr) != this->_structTypes.end() )
-        return this->_structTypes[typeStr];
+    return getVarType(type.name);
 
     return 0;
 }
+
+
 
 Value* TypeSystem::getDefaultValue(string typeStr, LLVMContext &context) {
     Type* type = this->getVarType(typeStr);
@@ -165,5 +148,35 @@ long TypeSystem::getStructMemberIndex(string structName, string memberName) {
     LogError("Unknown struct member");
 
     return 0;
+}
+
+Type *TypeSystem::getVarType(string typeStr) {
+
+    if( typeStr.compare("int") == 0 ){
+        return this->intTy;
+    }
+    if( typeStr.compare("float") == 0 ){
+        return this->floatTy;
+    }
+    if( typeStr.compare("double") == 0 ){
+        return this->doubleTy;
+    }
+    if( typeStr.compare("bool") == 0 ){
+        return this->boolTy;
+    }
+    if( typeStr.compare("char") == 0 ){
+        return this->charTy;
+    }
+    if( typeStr.compare("void") == 0 ){
+        return this->voidTy;
+    }
+    if( typeStr.compare("string") == 0 ){
+        return this->stringTy;
+    }
+
+    if( this->_structTypes.find(typeStr) != this->_structTypes.end() )
+        return this->_structTypes[typeStr];
+
+    return nullptr;
 }
 

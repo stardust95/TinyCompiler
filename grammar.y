@@ -27,8 +27,8 @@
 %token <token> TPLUS TMINUS TMUL TDIV TAND TOR TXOR TMOD TNEG TNOT TSHIFTL TSHIFTR
 %token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
-%type <ident> ident
-%type <expr> numeric expr assign struct_member
+%type <ident> ident typename
+%type <expr> numeric expr assign
 %type <varvec> func_decl_args struct_members
 %type <exprvec> call_args
 %type <block> program stmts block
@@ -55,11 +55,17 @@ stmt : var_decl | func_decl | struct_decl
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
+typename : ident { $1->isType = true; $$ = $1; }
+			| ident TLBRACKET TINTEGER TRBRACKET { 
+				$1->isType = true; $1->isArray = true; 
+				$1->arraySize = make_shared<NInteger>(atol($3->c_str())); 
+				$$ = $1; 
+			}
 
-var_decl : ident ident { $$ = new NVariableDeclaration(*$1, *$2, nullptr); }
-				 | ident ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, *$2, $4); }
+var_decl : typename ident { $$ = new NVariableDeclaration(*$1, *$2, nullptr); }
+				 | typename ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, *$2, $4); }
 				 ;
-func_decl : ident ident TLPAREN func_decl_args TRPAREN block
+func_decl : typename ident TLPAREN func_decl_args TRPAREN block
 					{ $$ = new NFunctionDeclaration(*$1, *$2, *$4, *$6); delete $4; }
 					;
 
@@ -83,12 +89,21 @@ expr : 	assign { $$ = $1; }
 		 | expr comparison expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
 		 | TMINUS expr { $$ = nullptr; /* TODO */ }
+		 | ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(*$1, *$3); }
 		 | { $$ = nullptr; }
 		 ;
 
 assign : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
 			| ident TDOT ident TEQUAL expr { auto member = new NStructMember(*$1, *$3); 
-			$$ = new NStructAssignment(*member, *$5); }
+					$$ = new NStructAssignment(*member, *$5); 
+			}
+			| ident TLBRACKET expr TRBRACKET TEQUAL expr {
+				cout << "1" << endl;
+				auto index = new NArrayIndex(*$1, *$3);
+				cout << "2" << endl;
+				$$ = new NArrayAssignment(*index, *$6);
+				cout << "3" << endl;
+			}
 
 call_args : /* blank */ { $$ = new ExpressionList(); }
 					| expr { $$ = new ExpressionList(); $$->push_back($1); }
@@ -98,6 +113,11 @@ comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
 					 ;
 if_stmt : TIF expr block { $$ = new NIfStatement(*$2, $3); }
 		| TIF expr block TELSE block { $$ = new NIfStatement(*$2, $3, $5); }
+		| TIF expr block TELSE if_stmt { 
+			auto blk = new NBlock(); 
+			blk->statements.push_back($<stmt>5); 
+			$$ = new NIfStatement(*$2, $3, blk); 
+		}
 
 for_stmt : TFOR TLPAREN expr TSEMICOLON expr TSEMICOLON expr TRPAREN block { $$ = new NForStatement(*$9, $3, $5, $7); }
 		

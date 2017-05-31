@@ -99,6 +99,7 @@ public:
 
     long getStructMemberIndex(string structName, string memberName);
 
+    Type* getVarType(const NIdentifier& type) ;
     Type* getVarType(string typeStr) ;
 
     Value* getDefaultValue(string typeStr, LLVMContext &context) ;

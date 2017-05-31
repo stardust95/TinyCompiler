@@ -10,6 +10,8 @@
 using std::cout;
 using std::endl;
 using std::string;
+using std::shared_ptr;
+using std::make_shared;
 
 class CodeGenContext;
 class NBlock;
@@ -34,19 +36,28 @@ public:
 
 class NExpression : public Node {
 public:
-//    NExpression(){}
+    NExpression(){}
 //
 //    NExpression operator=(const NExpression& ) = default;
 
 	string getTypeName() const override {
 		return "NExpression";
 	}
+
+    virtual void print(string prefix) const override{
+        cout << prefix << getTypeName() << endl;
+    }
+
 };
 
 class NStatement : public Node {
+public:
 	string getTypeName() const override {
 		return "NStatement";
 	}
+    virtual void print(string prefix) const override{
+        cout << prefix << getTypeName() << endl;
+    }
 };
 
 class NDouble : public NExpression {
@@ -96,9 +107,13 @@ public:
 class NIdentifier : public NExpression {
 public:
 	std::string name;
+    bool isType;
+    bool isArray;
+
+    shared_ptr<NInteger> arraySize;
 
 	NIdentifier(const std::string &name)
-		: name(name) {
+		: name(name), arraySize(nullptr) {
 		// return "NIdentifier=" << name << endl;
 	}
 
@@ -107,8 +122,16 @@ public:
 	}
 
 	void print(string prefix) const override{
-		cout << prefix << getTypeName() << this->m_DELIM << name << endl;
+        string nextPrefix = prefix+this->m_PREFIX;
+		cout << prefix << getTypeName() << this->m_DELIM << name << (isArray ? "(Array)" : "") << endl;
+        if( isArray ){
+
+            assert(arraySize != nullptr);
+
+            arraySize->print(nextPrefix);
+        }
 	}
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -163,6 +186,7 @@ public:
 		lhs.print(nextPrefix);
 		rhs.print(nextPrefix);
 	}
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -234,12 +258,16 @@ public:
 	NIdentifier &id;
 	NExpression *assignmentExpr;
 
-	NVariableDeclaration(const NIdentifier &type, NIdentifier &id)
-		: type(type), id(id), assignmentExpr(nullptr) {
-	}
+//	NVariableDeclaration(const NIdentifier &type, NIdentifier &id)
+//		: type(type), id(id), assignmentExpr(nullptr) {
+//        assert(type.isType);
+//        assert()
+//	}
 
-	NVariableDeclaration(const NIdentifier &type, NIdentifier &id, NExpression *assignmentExpr)
+	NVariableDeclaration(const NIdentifier &type, NIdentifier &id, NExpression *assignmentExpr = NULL)
 		: type(type), id(id), assignmentExpr(assignmentExpr) {
+        assert(type.isType);
+        assert(!type.isArray || (type.isArray && type.arraySize != nullptr));
 	}
 
 	string getTypeName() const override {
@@ -266,6 +294,7 @@ public:
 
 	NFunctionDeclaration(const NIdentifier &type, const NIdentifier &id, const VariableList &arguments, NBlock &block)
 		: type(type), id(id), arguments(arguments), block(block) {
+        assert(type.isType);
 	}
 
 	string getTypeName() const override {
@@ -406,7 +435,6 @@ public:
 };
 
 class NStructMember: public NExpression{
-
 public:
 	const NIdentifier& id;
 	const NIdentifier& member;
@@ -427,6 +455,61 @@ public:
         id.print(nextPrefix);
         member.print(nextPrefix);
     }
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+};
+
+class NArrayIndex: public NExpression{
+public:
+    const NIdentifier& arrayName;
+    NExpression& expression;
+
+    NArrayIndex(const NIdentifier& name, NExpression& exp)
+            : arrayName(name), expression(exp){
+
+    }
+
+    string getTypeName() const override{
+        return "NArrayIndex";
+    }
+
+
+    void print(string prefix) const override{
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        arrayName.print(nextPrefix);
+        expression.print(nextPrefix);
+    }
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+};
+
+class NArrayAssignment: public NExpression{
+public:
+    const NArrayIndex& arrayIndex;
+    NExpression& expression;
+
+    NArrayAssignment(const NArrayIndex& index, NExpression& exp)
+            : arrayIndex(index), expression(exp){
+
+    }
+
+    string getTypeName() const override{
+        return "NArrayAssignment";
+    }
+
+    void print(string prefix) const override{
+
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        arrayIndex.print(nextPrefix);
+        expression.print(nextPrefix);
+    }
+
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
 
@@ -457,9 +540,9 @@ public:
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
 
-
-
 };
+
+
 
 std::unique_ptr<NExpression> LogError(const char* str);
 

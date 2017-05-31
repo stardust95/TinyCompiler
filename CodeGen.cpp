@@ -26,10 +26,9 @@
  *
  */
 
-
 //
 static Type* TypeOf(const NIdentifier & type, CodeGenContext& context){        // get llvm::type of variable base on its identifier
-    return context.typeSystem.getVarType(type.name);
+    return context.typeSystem.getVarType(type);
 }
 
 Value* CastToBoolean(CodeGenContext& context, Value* condValue){
@@ -41,7 +40,6 @@ Value* CastToBoolean(CodeGenContext& context, Value* condValue){
         return context.builder.CreateFCmpONE(condValue, ConstantFP::get(context.llvmContext, APFloat(0.0)));
     }else{
         return condValue;
-//        return LogErrorV("Invalid condition type");
     }
 }
 
@@ -265,7 +263,18 @@ llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
     Type* type = TypeOf(this->type, context);
     Value* initial = nullptr;
 
-    AllocaInst* inst = context.builder.CreateAlloca(type);
+    AllocaInst* inst = nullptr;
+
+//    inst = context.builder.CreateAlloca(type, this->type.isArray
+//                                              ? this->type.arraySize->codeGen(context)
+//                                              : nullptr);
+
+    if( this->type.isArray ){
+        auto arraySize = this->type.arraySize->codeGen(context);
+        inst = context.builder.CreateAlloca(type, arraySize, "arraytmp");
+    }else{
+        inst = context.builder.CreateAlloca(type);
+    }
 
     context.setSymbolType(this->id.name, this->type.name);
     context.setSymbolValue(this->id.name, inst);
@@ -429,7 +438,48 @@ llvm::Value* NStructAssignment::codeGen(CodeGenContext &context) {
     indices.push_back(ConstantInt::get(context.typeSystem.intTy, 0, false));
     indices.push_back(ConstantInt::get(context.typeSystem.intTy, (uint64_t)memberIndex, false));
 
-    auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "memberPtr");
+    auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "structMemberPtr");
+
+    return context.builder.CreateStore(value, ptr);
+}
+
+llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
+    cout << "Generating array index expression of " << this->arrayName.name << endl;
+    auto varPtr = context.getSymbolValue(this->arrayName.name);
+    auto arrayPtr = context.builder.CreateLoad(varPtr, "arrayPtr");
+    arrayPtr->setAlignment(16);
+
+    if( !arrayPtr->getType()->isArrayTy() ){
+        return LogErrorV("The variable is not array");
+    }
+
+    std::vector<Value*> indices;
+    auto value = this->expression.codeGen(context);
+    indices.push_back(value);
+
+//    auto ptr = GetElementPtrInst::CreateInBounds(arrayPtr, indices, "arrayIndexPtr", context.builder.GetInsertBlock());
+    auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "arrayIndexPtr");
+
+    return context.builder.CreateLoad(ptr);
+}
+
+
+llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
+    cout << "Generating array index assignment of " << this->arrayIndex.arrayName.name << endl;
+    auto varPtr = context.getSymbolValue(this->arrayIndex.arrayName.name);
+    auto arrayPtr = context.builder.CreateLoad(varPtr, "arrayPtr");
+    arrayPtr->setAlignment(16);
+
+    if( !arrayPtr->getType()->isArrayTy() ){
+        return LogErrorV("The variable is not array");
+    }
+
+    std::vector<Value*> indices;
+    auto value = this->expression.codeGen(context);
+    indices.push_back(value);
+
+//    auto ptr = GetElementPtrInst::CreateInBounds(arrayPtr, indices, "arrayIndexPtr", context.builder.GetInsertBlock());
+    auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "arrayIndexPtr");
 
     return context.builder.CreateStore(value, ptr);
 }
