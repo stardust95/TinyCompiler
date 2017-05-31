@@ -67,6 +67,7 @@ TypeSystem::TypeSystem(LLVMContext &context): llvmContext(context){
     addCast(floatTy, doubleTy, llvm::CastInst::FPExt);
     addCast(floatTy, intTy, llvm::CastInst::FPToSI);
     addCast(doubleTy, intTy, llvm::CastInst::FPToSI);
+    addCast(intTy, intTy, llvm::CastInst::SExt);
 }
 
 void TypeSystem::addStructMember(string structName, string memType, string memName) {
@@ -81,7 +82,7 @@ void TypeSystem::addStructType(string name, llvm::StructType *type) {
     this->_structMembers[name] = std::vector<TypeNamePair>();
 }
 
-Type *TypeSystem::getVarType(string typeStr) const{
+Type *TypeSystem::getVarType(string typeStr) {
     if( typeStr.compare("int") == 0 ){
         return this->intTy;
     }
@@ -104,10 +105,13 @@ Type *TypeSystem::getVarType(string typeStr) const{
         return this->stringTy;
     }
 
+    if( this->_structTypes.find(typeStr) != this->_structTypes.end() )
+        return this->_structTypes[typeStr];
+
     return 0;
 }
 
-Value* TypeSystem::getDefaultValue(string typeStr, LLVMContext &context) const {
+Value* TypeSystem::getDefaultValue(string typeStr, LLVMContext &context) {
     Type* type = this->getVarType(typeStr);
     if( type == this->intTy ){
         return ConstantInt::get(type, 0, true);
@@ -133,9 +137,33 @@ Value* TypeSystem::cast(Value *value, Type *type, BasicBlock *block) {
         return value;
     }
     if( _castTable[from].find(type) == _castTable[from].end() ){
-        LogError("Unable to cast");
+        string error = "Unable to cast from ";
+        error += llvmTypeToStr(from) + " to " + llvmTypeToStr(type);
+        LogError(error.c_str());
         return value;
     }
+
     return CastInst::Create(_castTable[from][type], value, type, "cast", block);
+}
+
+bool TypeSystem::isStruct(string typeStr) const {
+    return this->_structTypes.find(typeStr) != this->_structTypes.end();
+}
+
+long TypeSystem::getStructMemberIndex(string structName, string memberName) {
+    if( this->_structTypes.find(structName) == this->_structTypes.end() ){
+        LogError("Unknown struct name");
+        return 0;
+    }
+    auto& members = this->_structMembers[structName];
+    for(auto it=members.begin(); it!=members.end(); it++){
+        if( it->second == memberName ){
+            return std::distance(members.begin(), it);
+        }
+    }
+
+    LogError("Unknown struct member");
+
+    return 0;
 }
 

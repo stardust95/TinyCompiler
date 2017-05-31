@@ -287,7 +287,6 @@ public:
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
-
 class NStructDeclaration: public NStatement{
 public:
     const NIdentifier name;
@@ -406,7 +405,61 @@ public:
 
 };
 
+class NStructMember: public NExpression{
 
+public:
+	const NIdentifier& id;
+	const NIdentifier& member;
+
+    NStructMember(const NIdentifier &structName, const NIdentifier &member)
+            : id(structName),member(member) {
+    }
+
+    string getTypeName() const override{
+        return "NStructMember";
+    }
+
+    void print(string prefix) const override{
+
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        id.print(nextPrefix);
+        member.print(nextPrefix);
+    }
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+};
+
+class NStructAssignment: public NExpression{
+public:
+    const NStructMember& structMember;
+    NExpression& expression;
+
+    NStructAssignment(const NStructMember& member, NExpression& exp)
+            : structMember(member), expression(exp){
+
+    }
+
+    string getTypeName() const override{
+        return "NStructAssignment";
+    }
+
+    void print(string prefix) const override{
+
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        structMember.print(nextPrefix);
+        expression.print(nextPrefix);
+    }
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+
+
+};
 
 std::unique_ptr<NExpression> LogError(const char* str);
 

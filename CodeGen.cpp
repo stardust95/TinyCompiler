@@ -17,8 +17,9 @@
 #define ISTYPE(value, id) (value->getType()->getTypeID() == id)
 
 /*
- * TODO: 1. struct define
+ * TODO: 1. struct variable declare, member assign
  *       2. array type
+ *       3. fix memory leaks
  *
  *
  */
@@ -71,23 +72,12 @@ llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
     }
     Value* exp = exp = this->rhs.codeGen(context);
 
-//    if( dstType == "int" ){            // notice that dst.llvm::type is pointerTy
-//        if( ISTYPE(exp, Type::DoubleTyID) )
-//            exp = context.builder.CreateFPToUI(exp, Type::getInt32Ty(context.llvmContext));
-//        else if( ISTYPE(exp, Type::IntegerTyID) )
-//            exp = context.builder.CreateIntCast(exp, Type::getInt32Ty(context.llvmContext), true);
-//        else
-//            return LogErrorV("TODO");
-//    }else if( dstType == "double" && ISTYPE(exp, Type::IntegerTyID) ){
-//        exp = context.builder.CreateUIToFP(exp, Type::getDoubleTy(context.llvmContext));
-//    }
-
     cout << "dst typeid = " << TypeSystem::llvmTypeToStr(context.typeSystem.getVarType(dstType)) << endl;
     cout << "exp typeid = " << TypeSystem::llvmTypeToStr(exp) << endl;
 
     exp = context.typeSystem.cast(exp, context.typeSystem.getVarType(dstType), context.currentBlock());
-
-    return context.builder.CreateStore(exp, dst);
+    context.builder.CreateStore(exp, dst);
+    return dst;
 }
 
 llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
@@ -113,7 +103,6 @@ llvm::Value* NBinaryOperator::codeGen(CodeGenContext &context) {
     cout << "fp = " << ( fp ? "true" : "false" ) << endl;
     cout << "L is " << TypeSystem::llvmTypeToStr(L) << endl;
     cout << "R is " << TypeSystem::llvmTypeToStr(R) << endl;
-
 
     switch (this->op){
         case TPLUS:
@@ -259,14 +248,16 @@ llvm::Value* NMethodCall::codeGen(CodeGenContext &context) {
 llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
     cout << "Generating variable declaration of " << this->type.name << " " << this->id.name << endl;
     Type* type = TypeOf(this->type, context);
+    Value* initial = nullptr;
 
     AllocaInst* inst = context.builder.CreateAlloca(type);
-//    context.types()[this->id.name] = this->type.name;
 
     context.setSymbolType(this->id.name, this->type.name);
     context.setSymbolValue(this->id.name, inst);
+
     context.PrintSymTable();
-    if( this->assignmentExpr ){
+
+    if( this->assignmentExpr != nullptr ){
         NAssignment assignment(this->id, *(this->assignmentExpr));
         assignment.codeGen(context);
     }
@@ -381,6 +372,36 @@ llvm::Value* NForStatement::codeGen(CodeGenContext &context) {
     return nullptr;
 }
 
+llvm::Value *NStructMember::codeGen(CodeGenContext &context) {
+
+    return nullptr;
+}
+
+llvm::Value* NStructAssignment::codeGen(CodeGenContext &context) {
+    cout << "Generating struct assignment of " << this->structMember.id.name << endl;
+    auto varPtr = context.getSymbolValue(this->structMember.id.name);
+    auto load = context.builder.CreateLoad(varPtr, "structPtr");
+//    auto underlyingStruct = context.builder.CreateLoad(load);
+    load->setAlignment(4);
+
+
+    if( !load->getType()->isStructTy() ){
+        return LogErrorV("The variable is not struct");
+    }
+
+    string structName = load->getType()->getStructName().str();
+    long memberIndex = context.typeSystem.getStructMemberIndex(structName, this->structMember.member.name);
+
+    std::vector<Value*> indices;
+    auto value = this->expression.codeGen(context);
+//    auto index = ;
+    indices.push_back(ConstantInt::get(context.typeSystem.intTy, 0, false));
+    indices.push_back(ConstantInt::get(context.typeSystem.intTy, (uint64_t)memberIndex, false));
+
+    auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "memberPtr");
+
+    return context.builder.CreateStore(value, ptr);
+}
 
 
 /*

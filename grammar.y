@@ -28,7 +28,7 @@
 %token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
 %type <ident> ident
-%type <expr> numeric expr assign
+%type <expr> numeric expr assign struct_member
 %type <varvec> func_decl_args struct_members
 %type <exprvec> call_args
 %type <block> program stmts block
@@ -68,15 +68,16 @@ func_decl_args : /* blank */ { $$ = new VariableList(); }
 							 | func_decl_args TCOMMA var_decl { $1->push_back($<var_decl>3); }
 							 ;
 
-
 ident : TIDENTIFIER { $$ = new NIdentifier(*$1); delete $1; }
 			;
+
 numeric : TINTEGER { $$ = new NInteger(atol($1->c_str())); delete $1; }
 				| TDOUBLE { $$ = new NDouble(atof($1->c_str())); delete $1; }
 				;
 expr : 	assign { $$ = $1; }
 		 | ident TLPAREN call_args TRPAREN { $$ = new NMethodCall(*$1, *$3); delete $3; }
 		 | ident { $<ident>$ = $1; }
+		 | ident TDOT ident { $$ = new NStructMember(*$1, *$3); }
 		 | numeric
 		 | expr comparison expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
@@ -84,6 +85,8 @@ expr : 	assign { $$ = $1; }
 		 ;
 
 assign : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
+			| ident TDOT ident TEQUAL expr { auto member = new NStructMember(*$1, *$3); 
+			$$ = new NStructAssignment(*member, *$5); }
 
 call_args : /* blank */ { $$ = new ExpressionList(); }
 					| expr { $$ = new ExpressionList(); $$->push_back($1); }

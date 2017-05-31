@@ -97,11 +97,15 @@ public:
 
     void addStructMember(string structName, string memType, string memName);
 
-    Type* getVarType(string typeStr) const;
+    long getStructMemberIndex(string structName, string memberName);
 
-    Value* getDefaultValue(string typeStr, LLVMContext &context) const;
+    Type* getVarType(string typeStr) ;
 
-    Value* cast(Value* value, Type* type, BasicBlock* block);
+    Value* getDefaultValue(string typeStr, LLVMContext &context) ;
+
+    Value* cast(Value* value, Type* type, BasicBlock* block) ;
+
+    bool isStruct(string typeStr) const;
 
     static string llvmTypeToStr(Value* value) ;
     static string llvmTypeToStr(Type* type) ;

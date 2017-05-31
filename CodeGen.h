@@ -28,8 +28,6 @@ public:
     Value * returnValue;
     std::map<string, Value*> locals;
     std::map<string, string> types;     // type name string of vars
-
-
 };
 
 class CodeGenContext{
@@ -114,8 +112,6 @@ public:
     }
 
     void generateCode(NBlock& );
-
-
 };
 
 Value* LogErrorV(const char* str);

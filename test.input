@@ -11,11 +11,13 @@ int do_math(int a) {
 int test(){
     int a = 1 < 2
     double b = 1 + 0.0
+    Point p
     if( a < b ){
-        int x = 3.2
+        int x = a = b
         b = x
     }else{
         a = a < 2
+        p.y = a
     }
     for( a=0; a<1; a=a+1){
         b = 3
