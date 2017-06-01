@@ -6,7 +6,7 @@
 #include <vector>
 #include <llvm/IR/Value.h>
 #include <memory>
-
+//puts("$1"); return $1;
 using std::cout;
 using std::endl;
 using std::string;
@@ -124,10 +124,8 @@ public:
 	void print(string prefix) const override{
         string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << name << (isArray ? "(Array)" : "") << endl;
-        if( isArray ){
-
-            assert(arraySize != nullptr);
-
+        if( isArray && arraySize != nullptr ){
+//            assert(arraySize != nullptr);
             arraySize->print(nextPrefix);
         }
 	}

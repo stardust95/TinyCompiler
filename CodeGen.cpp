@@ -467,6 +467,11 @@ llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
 llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
     cout << "Generating array index assignment of " << this->arrayIndex.arrayName.name << endl;
     auto varPtr = context.getSymbolValue(this->arrayIndex.arrayName.name);
+
+    if( varPtr == nullptr ){
+        return LogErrorV("Unknown variable name");
+    }
+    
     auto arrayPtr = context.builder.CreateLoad(varPtr, "arrayPtr");
     arrayPtr->setAlignment(16);
 

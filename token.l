@@ -4,7 +4,7 @@
 #include "ASTNodes.h"
 #include "grammar.hpp"
 #define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
-#define TOKEN(t) (yylval.token = t)
+#define TOKEN(t) ( yylval.token = t)
 
 static FILE* yyparse_file_ptr;
 
@@ -26,41 +26,43 @@ static FILE* yyparse_file_ptr;
 %%
 
 [ \t\r\n]				;
-"if"                    return TOKEN(TIF);
-"else"                  return TOKEN(TELSE);
-"return"                 return TOKEN(TRETURN);
-"for"                   return TOKEN(TFOR);
-"while"                 return TOKEN(TWHILE);
-"struct"                return TOKEN(TSTRUCT);
-[a-zA-Z_][a-zA-Z0-9_]*	SAVE_TOKEN; return TIDENTIFIER;
-[0-9]+\.[0-9]*			SAVE_TOKEN; return TDOUBLE;
-[0-9]+  				SAVE_TOKEN; return TINTEGER;
-"="						return TOKEN(TEQUAL);
-"=="					return TOKEN(TCEQ);
-"!="                    return TOKEN(TCNE);
-"<"                     return TOKEN(TCLT);
-"<="                    return TOKEN(TCLE);
-">"                     return TOKEN(TCGT);
-">="                    return TOKEN(TCGE);
-"("                     return TOKEN(TLPAREN);
-")"                     return TOKEN(TRPAREN);
-"{"                     return TOKEN(TLBRACE);
-"}"                     return TOKEN(TRBRACE);
-"["                     return TOKEN(TLBRACKET);
-"]"                     return TOKEN(TRBRACKET);
-"."                     return TOKEN(TDOT);
-","                     return TOKEN(TCOMMA);
-"+"                     return TOKEN(TPLUS);
-"-"                     return TOKEN(TMINUS);
-"*"                     return TOKEN(TMUL);
-"/"                     return TOKEN(TDIV);
-"&"                     return TOKEN(TAND);
-"|"                     return TOKEN(TOR);
-"^"                     return TOKEN(TXOR);
-"%"                     return TOKEN(TMOD);
-">>"                    return TOKEN(TSHIFTR);
-"<<"                    return TOKEN(TSHIFTL);
-";"                     return TOKEN(TSEMICOLON);
+"if"                    puts("TIF"); return TOKEN(TIF);
+"else"                  puts("TELSE"); return TOKEN(TELSE);
+"return"                puts("TRETURN"); return TOKEN(TRETURN);
+"for"                   puts("TFOR"); return TOKEN(TFOR);
+"while"                 puts("TWHILE"); return TOKEN(TWHILE);
+"struct"                puts("TSTRUCT"); return TOKEN(TSTRUCT);
+"int"                   SAVE_TOKEN; puts("TYINT");  return TYINT;
+"double"                SAVE_TOKEN; puts("TYDOUBLE"); return TYDOUBLE;
+[a-zA-Z_][a-zA-Z0-9_]*	SAVE_TOKEN; puts("TIDENTIFIER"); return TIDENTIFIER;
+[0-9]+\.[0-9]*			SAVE_TOKEN; puts("TDOUBLE"); return TDOUBLE;
+[0-9]+  				SAVE_TOKEN; puts("TINTEGER"); return TINTEGER;
+"="						puts("TEQUAL"); return TOKEN(TEQUAL);
+"=="					puts("TCEQ"); return TOKEN(TCEQ);
+"!="                    puts("TCNE"); return TOKEN(TCNE);
+"<"                     puts("TCLT"); return TOKEN(TCLT);
+"<="                    puts("TCLE"); return TOKEN(TCLE);
+">"                     puts("TCGT"); return TOKEN(TCGT);
+">="                    puts("TCGE"); return TOKEN(TCGE);
+"("                     puts("TLPAREN"); return TOKEN(TLPAREN);
+")"                     puts("TRPAREN"); return TOKEN(TRPAREN);
+"{"                     puts("TLBRACE"); return TOKEN(TLBRACE);
+"}"                     puts("TRBRACE"); return TOKEN(TRBRACE);
+"["                     puts("TLBRACKET"); return TOKEN(TLBRACKET);
+"]"                     puts("TRBRACKET"); return TOKEN(TRBRACKET);
+"."                     puts("TDOT"); return TOKEN(TDOT);
+","                     puts("TCOMMA"); return TOKEN(TCOMMA);
+"+"                     puts("TPLUS"); return TOKEN(TPLUS);
+"-"                     puts("TMINUS"); return TOKEN(TMINUS);
+"*"                     puts("TMUL"); return TOKEN(TMUL);
+"/"                     puts("TDIV"); return TOKEN(TDIV);
+"&"                     puts("TAND"); return TOKEN(TAND);
+"|"                     puts("TOR"); return TOKEN(TOR);
+"^"                     puts("TXOR"); return TOKEN(TXOR);
+"%"                     puts("TMOD"); return TOKEN(TMOD);
+">>"                    puts("TSHIFTR"); return TOKEN(TSHIFTR);
+"<<"                    puts("TSHIFTL"); return TOKEN(TSHIFTL);
+";"                     puts("TSEMICOLON"); return TOKEN(TSEMICOLON);
 .						printf("Unknown token:%s\n", yytext); yyterminate();
 
 

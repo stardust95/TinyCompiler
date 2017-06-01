@@ -48,40 +48,42 @@ extern int yydebug;
     TIDENTIFIER = 258,
     TINTEGER = 259,
     TDOUBLE = 260,
-    TCEQ = 261,
-    TCNE = 262,
-    TCLT = 263,
-    TCLE = 264,
-    TCGT = 265,
-    TCGE = 266,
-    TEQUAL = 267,
-    TLPAREN = 268,
-    TRPAREN = 269,
-    TLBRACE = 270,
-    TRBRACE = 271,
-    TCOMMA = 272,
-    TDOT = 273,
-    TSEMICOLON = 274,
-    TLBRACKET = 275,
-    TRBRACKET = 276,
-    TPLUS = 277,
-    TMINUS = 278,
-    TMUL = 279,
-    TDIV = 280,
-    TAND = 281,
-    TOR = 282,
-    TXOR = 283,
-    TMOD = 284,
-    TNEG = 285,
-    TNOT = 286,
-    TSHIFTL = 287,
-    TSHIFTR = 288,
-    TIF = 289,
-    TELSE = 290,
-    TFOR = 291,
-    TWHILE = 292,
-    TRETURN = 293,
-    TSTRUCT = 294
+    TYINT = 261,
+    TYDOUBLE = 262,
+    TCEQ = 263,
+    TCNE = 264,
+    TCLT = 265,
+    TCLE = 266,
+    TCGT = 267,
+    TCGE = 268,
+    TEQUAL = 269,
+    TLPAREN = 270,
+    TRPAREN = 271,
+    TLBRACE = 272,
+    TRBRACE = 273,
+    TCOMMA = 274,
+    TDOT = 275,
+    TSEMICOLON = 276,
+    TLBRACKET = 277,
+    TRBRACKET = 278,
+    TPLUS = 279,
+    TMINUS = 280,
+    TMUL = 281,
+    TDIV = 282,
+    TAND = 283,
+    TOR = 284,
+    TXOR = 285,
+    TMOD = 286,
+    TNEG = 287,
+    TNOT = 288,
+    TSHIFTL = 289,
+    TSHIFTR = 290,
+    TIF = 291,
+    TELSE = 292,
+    TFOR = 293,
+    TWHILE = 294,
+    TRETURN = 295,
+    TSTRUCT = 296
   };
 #endif
 
@@ -98,12 +100,13 @@ union YYSTYPE
 	NStatement* stmt;
 	NIdentifier* ident;
 	NVariableDeclaration* var_decl;
+	NArrayIndex* index;
 	std::vector<NVariableDeclaration*>* varvec;
 	std::vector<NExpression*>* exprvec;
 	std::string* string;
 	int token;
 
-#line 107 "grammar.hpp" /* yacc.c:1915  */
+#line 110 "grammar.hpp" /* yacc.c:1915  */
 };
 
 typedef union YYSTYPE YYSTYPE;

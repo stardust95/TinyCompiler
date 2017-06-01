@@ -16,18 +16,21 @@
 	NStatement* stmt;
 	NIdentifier* ident;
 	NVariableDeclaration* var_decl;
+	NArrayIndex* index;
 	std::vector<NVariableDeclaration*>* varvec;
 	std::vector<NExpression*>* exprvec;
 	std::string* string;
 	int token;
 }
-%token <string> TIDENTIFIER TINTEGER TDOUBLE
+
+%token <string> TIDENTIFIER TINTEGER TDOUBLE TYINT TYDOUBLE
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL
 %token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON TLBRACKET TRBRACKET
 %token <token> TPLUS TMINUS TMUL TDIV TAND TOR TXOR TMOD TNEG TNOT TSHIFTL TSHIFTR
 %token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
-%type <ident> ident typename
+%type <index> array_index
+%type <ident> ident typename primary_typename
 %type <expr> numeric expr assign
 %type <varvec> func_decl_args struct_members
 %type <exprvec> call_args
@@ -55,12 +58,15 @@ stmt : var_decl | func_decl | struct_decl
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
-typename : ident { $1->isType = true; $$ = $1; }
-			| ident TLBRACKET TINTEGER TRBRACKET { 
+typename : primary_typename { $1->isType = true; $$ = $1; }
+			| primary_typename TLBRACKET TINTEGER TRBRACKET { 
 				$1->isType = true; $1->isArray = true; 
 				$1->arraySize = make_shared<NInteger>(atol($3->c_str())); 
 				$$ = $1; 
 			}
+
+primary_typename : TYINT { cout << *$1 << endl; $$ = new NIdentifier(*$1); delete $1; }
+					| TYDOUBLE { $$ = new NIdentifier(*$1); delete $1; }
 
 var_decl : typename ident { $$ = new NVariableDeclaration(*$1, *$2, nullptr); }
 				 | typename ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, *$2, $4); }
@@ -89,21 +95,19 @@ expr : 	assign { $$ = $1; }
 		 | expr comparison expr { $$ = new NBinaryOperator(*$1, $2, *$3); }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
 		 | TMINUS expr { $$ = nullptr; /* TODO */ }
-		 | ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(*$1, *$3); }
-		 | { $$ = nullptr; }
+		 | array_index { $$ = $1; }
 		 ;
+array_index : ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(*$1, *$3); }
 
 assign : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }
-			| ident TDOT ident TEQUAL expr { auto member = new NStructMember(*$1, *$3); 
-					$$ = new NStructAssignment(*member, *$5); 
+			| array_index TEQUAL expr {
+				$$ = new NArrayAssignment(*$1, *$3);
 			}
-			| ident TLBRACKET expr TRBRACKET TEQUAL expr {
-				cout << "1" << endl;
-				auto index = new NArrayIndex(*$1, *$3);
-				cout << "2" << endl;
-				$$ = new NArrayAssignment(*index, *$6);
-				cout << "3" << endl;
+			| ident TDOT ident TEQUAL expr {
+				auto member = new NStructMember(*$1, *$3); 
+				$$ = new NStructAssignment(*member, *$5); 
 			}
+			;
 
 call_args : /* blank */ { $$ = new ExpressionList(); }
 					| expr { $$ = new ExpressionList(); $$->push_back($1); }
