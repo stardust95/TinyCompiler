@@ -17,11 +17,12 @@
 #define ISTYPE(value, id) (value->getType()->getTypeID() == id)
 
 /*
- * TODO: 1. array type
+ * TODO:
  *       2. fix memory leaks  <- share pointer
  *       3. unary ops
  *       4. variable declaration list
  *       5. char, string, bool types
+ *       6. external function invoke
  *
  *
  */
@@ -265,10 +266,6 @@ llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
 
     AllocaInst* inst = nullptr;
 
-//    inst = context.builder.CreateAlloca(type, this->type.isArray
-//                                              ? this->type.arraySize->codeGen(context)
-//                                              : nullptr);
-
     if( this->type.isArray ){
         auto arraySize = this->type.arraySize->codeGen(context);
         inst = context.builder.CreateAlloca(type, arraySize, "arraytmp");
@@ -380,9 +377,6 @@ llvm::Value* NForStatement::codeGen(CodeGenContext &context) {
     if( this->increment ){
         this->increment->codeGen(context);
     }
-//    Value* var = context.builder.CreateLoad(counter);
-//    Value* result = context.builder.CreateAdd(var, this->increment->codeGen(context), "counter");
-//    context.builder.CreateStore(result, counter);
 
     // execute the again or stop
     condValue = this->condition->codeGen(context);
@@ -489,6 +483,17 @@ llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
     return context.builder.CreateStore(value, ptr);
 }
 
+
+llvm::Value *NArrayInitialization::codeGen(CodeGenContext &context) {
+    auto arrayPtr = this->declaration->codeGen(context);
+    for(int i=0; i < this->expressionList.size(); i++){
+        NInteger index(i);
+        NArrayIndex arrayIndex(this->declaration->id.name, index);
+        NArrayAssignment assignment(arrayIndex, *(this->expressionList[i]));
+        assignment.codeGen(context);
+    }
+    return nullptr;
+}
 
 /*
  * Global Functions

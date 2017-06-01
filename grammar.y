@@ -55,26 +55,35 @@ stmt : var_decl | func_decl | struct_decl
 		 | for_stmt
 		 | while_stmt
 		 ;
+
 block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
+
+primary_typename : TYINT { cout << *$1 << endl; $$ = new NIdentifier(*$1); delete $1; }
+					| TYDOUBLE { $$ = new NIdentifier(*$1); delete $1; }
+
 typename : primary_typename { $1->isType = true; $$ = $1; }
 			| primary_typename TLBRACKET TINTEGER TRBRACKET { 
 				$1->isType = true; $1->isArray = true; 
 				$1->arraySize = make_shared<NInteger>(atol($3->c_str())); 
 				$$ = $1; 
 			}
-
-primary_typename : TYINT { cout << *$1 << endl; $$ = new NIdentifier(*$1); delete $1; }
-					| TYDOUBLE { $$ = new NIdentifier(*$1); delete $1; }
+			| TSTRUCT ident {
+				$2->isType = true;
+				$$ = $2;
+			}
 
 var_decl : typename ident { $$ = new NVariableDeclaration(*$1, *$2, nullptr); }
 				 | typename ident TEQUAL expr { $$ = new NVariableDeclaration(*$1, *$2, $4); }
+				 | typename ident TEQUAL TLBRACKET call_args TRBRACKET {
+					 $$ = new NArrayInitialization(make_shared<NVariableDeclaration>(NVariableDeclaration(*$1, *$2, nullptr)), *$5);
+				 }
 				 ;
+
 func_decl : typename ident TLPAREN func_decl_args TRPAREN block
 					{ $$ = new NFunctionDeclaration(*$1, *$2, *$4, *$6); delete $4; }
 					;
-
 
 func_decl_args : /* blank */ { $$ = new VariableList(); }
 							 | var_decl { $$ = new VariableList(); $$->push_back($<var_decl>1); }
@@ -97,6 +106,7 @@ expr : 	assign { $$ = $1; }
 		 | TMINUS expr { $$ = nullptr; /* TODO */ }
 		 | array_index { $$ = $1; }
 		 ;
+
 array_index : ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(*$1, *$3); }
 
 assign : ident TEQUAL expr { $$ = new NAssignment(*$<ident>1, *$3); }

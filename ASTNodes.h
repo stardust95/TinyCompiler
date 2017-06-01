@@ -513,6 +513,37 @@ public:
 
 };
 
+class NArrayInitialization: public NStatement{
+public:
+
+    shared_ptr<NVariableDeclaration> declaration;
+    ExpressionList expressionList;
+
+    NArrayInitialization(shared_ptr<NVariableDeclaration> dec, ExpressionList& list)
+            : declaration(dec), expressionList(list){
+
+    }
+
+    string getTypeName() const override{
+        return "NArrayInitialization";
+    }
+
+    void print(string prefix) const override{
+
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        declaration->print(nextPrefix);
+        for(auto it=expressionList.begin(); it!=expressionList.end(); it++){
+            (*it)->print(nextPrefix);
+        }
+    }
+
+
+    llvm::Value *codeGen(CodeGenContext &context) override ;
+
+};
+
 class NStructAssignment: public NExpression{
 public:
     const NStructMember& structMember;

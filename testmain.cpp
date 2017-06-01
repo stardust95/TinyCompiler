@@ -10,7 +10,8 @@ struct Point{
 };
 
 int main() {
-	int a[9];
-	a[7] = a[8];	
+	int a = 1, b = 2, c = 3;
+	int arr[3] = { a,b };
+	puts("asd");
 //	std::cout << "domath: " << do_math(1) << std::endl;
 }
