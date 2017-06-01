@@ -19,15 +19,16 @@ class NStatement;
 class NExpression;
 class NVariableDeclaration;
 
-typedef std::vector<NStatement *> StatementList;
-typedef std::vector<NExpression *> ExpressionList;
-typedef std::vector<NVariableDeclaration *> VariableList;
+typedef std::vector<shared_ptr<NStatement>> StatementList;
+typedef std::vector<shared_ptr<NExpression>> ExpressionList;
+typedef std::vector<shared_ptr<NVariableDeclaration>> VariableList;
 
 class Node {
 protected:
 	const char m_DELIM = ':';
 	const char* m_PREFIX = "--";
 public:
+    Node(){}
 	virtual ~Node() {}
 	virtual string getTypeName() const = 0;
 	virtual void print(string prefix) const{}
@@ -37,8 +38,6 @@ public:
 class NExpression : public Node {
 public:
     NExpression(){}
-//
-//    NExpression operator=(const NExpression& ) = default;
 
 	string getTypeName() const override {
 		return "NExpression";
@@ -52,6 +51,8 @@ public:
 
 class NStatement : public Node {
 public:
+    NStatement(){}
+
 	string getTypeName() const override {
 		return "NStatement";
 	}
@@ -63,6 +64,8 @@ public:
 class NDouble : public NExpression {
 public:
 	double value;
+
+    NDouble(){}
 
 	NDouble(double value)
 		: value(value) {
@@ -83,6 +86,8 @@ public:
 class NInteger : public NExpression {
 public:
     uint64_t value;
+
+    NInteger(){}
 
     NInteger(uint64_t value)
             : value(value) {
@@ -112,6 +117,8 @@ public:
 
     shared_ptr<NInteger> arraySize;
 
+    NIdentifier(){}
+
 	NIdentifier(const std::string &name)
 		: name(name), arraySize(nullptr) {
 		// return "NIdentifier=" << name << endl;
@@ -133,17 +140,20 @@ public:
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
-class NMethodCall
-	: public NExpression {
+class NMethodCall: public NExpression {
 public:
-	const NIdentifier &id;
-	ExpressionList arguments;
+	const shared_ptr<NIdentifier> id;
+	shared_ptr<ExpressionList> arguments = make_shared<ExpressionList>();
 
-	NMethodCall(const NIdentifier &id, ExpressionList &arguments)
+    NMethodCall(){
+
+    }
+
+	NMethodCall(const shared_ptr<NIdentifier> id, shared_ptr<ExpressionList> arguments)
 		: id(id), arguments(arguments) {
 	}
 
-	NMethodCall(const NIdentifier &id)
+	NMethodCall(const shared_ptr<NIdentifier> id)
 		: id(id) {
 	}
 
@@ -154,8 +164,8 @@ public:
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
-		this->id.print(nextPrefix);
-		for(auto it=arguments.begin(); it!=arguments.end(); it++){
+		this->id->print(nextPrefix);
+		for(auto it=arguments->begin(); it!=arguments->end(); it++){
 			(*it)->print(nextPrefix);
 		}
 	}
@@ -166,12 +176,14 @@ public:
 class NBinaryOperator : public NExpression {
 public:
 	int op;
-	NExpression &lhs;
-	NExpression &rhs;
+	shared_ptr<NExpression> lhs;
+	shared_ptr<NExpression> rhs;
 
-	NBinaryOperator(NExpression &lhs, int op, NExpression &rhs)
-		: lhs(lhs), rhs(rhs), op(op) {
-	}
+    NBinaryOperator(){}
+
+    NBinaryOperator(shared_ptr<NExpression> lhs, int op, shared_ptr<NExpression> rhs)
+            : lhs(lhs), rhs(rhs), op(op) {
+    }
 
 	string getTypeName() const override {
 		return "NBinaryOperator";
@@ -181,8 +193,8 @@ public:
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << op << endl;
 
-		lhs.print(nextPrefix);
-		rhs.print(nextPrefix);
+		lhs->print(nextPrefix);
+		rhs->print(nextPrefix);
 	}
 
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
@@ -190,10 +202,12 @@ public:
 
 class NAssignment : public NExpression {
 public:
-	NIdentifier &lhs;
-	NExpression &rhs;
+	shared_ptr<NIdentifier> lhs;
+	shared_ptr<NExpression> rhs;
 
-	NAssignment(NIdentifier &lhs, NExpression &rhs)
+    NAssignment(){}
+
+	NAssignment(shared_ptr<NIdentifier> lhs, shared_ptr<NExpression> rhs)
 		: lhs(lhs), rhs(rhs) {
 	}
 
@@ -204,17 +218,19 @@ public:
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
-		lhs.print(nextPrefix);
-		rhs.print(nextPrefix);
+		lhs->print(nextPrefix);
+		rhs->print(nextPrefix);
 	}
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NBlock : public NExpression {
 public:
-	StatementList statements;
+	shared_ptr<StatementList> statements = make_shared<StatementList>();
 
-	NBlock() {}
+    NBlock(){
+
+    }
 
 	string getTypeName() const override {
 		return "NBlock";
@@ -223,7 +239,7 @@ public:
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
-		for(auto it=statements.begin(); it!=statements.end(); it++){
+		for(auto it=statements->begin(); it!=statements->end(); it++){
 			(*it)->print(nextPrefix);
 		}
 	}
@@ -232,9 +248,11 @@ public:
 
 class NExpressionStatement : public NStatement {
 public:
-	NExpression &expression;
+	shared_ptr<NExpression> expression;
 
-	NExpressionStatement(NExpression &expression)
+    NExpressionStatement(){}
+
+	NExpressionStatement(shared_ptr<NExpression> expression)
 		: expression(expression) {
 	}
 
@@ -245,27 +263,29 @@ public:
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
-		expression.print(nextPrefix);
+		expression->print(nextPrefix);
 	}
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NVariableDeclaration : public NStatement {
 public:
-	const NIdentifier &type;
-	NIdentifier &id;
-	NExpression *assignmentExpr;
+	const shared_ptr<NIdentifier> type;
+	shared_ptr<NIdentifier> id;
+	shared_ptr<NExpression> assignmentExpr = nullptr;
 
-//	NVariableDeclaration(const NIdentifier &type, NIdentifier &id)
+//	NVariableDeclaration(const shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id)
 //		: type(type), id(id), assignmentExpr(nullptr) {
 //        assert(type.isType);
 //        assert()
 //	}
 
-	NVariableDeclaration(const NIdentifier &type, NIdentifier &id, NExpression *assignmentExpr = NULL)
+    NVariableDeclaration(){}
+
+	NVariableDeclaration(const shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id, shared_ptr<NExpression> assignmentExpr = NULL)
 		: type(type), id(id), assignmentExpr(assignmentExpr) {
-        assert(type.isType);
-        assert(!type.isArray || (type.isArray && type.arraySize != nullptr));
+        assert(type->isType);
+        assert(!type->isArray || (type->isArray && type->arraySize != nullptr));
 	}
 
 	string getTypeName() const override {
@@ -275,24 +295,27 @@ public:
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
-		type.print(nextPrefix);
-		id.print(nextPrefix);
-        if( assignmentExpr != nullptr )
-		    assignmentExpr->print(nextPrefix);
+		type->print(nextPrefix);
+		id->print(nextPrefix);
+        if( assignmentExpr != nullptr ){
+            assignmentExpr->print(nextPrefix);
+        }
 	}
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NFunctionDeclaration : public NStatement {
 public:
-	const NIdentifier &type;
-	const NIdentifier &id;
-	VariableList arguments;
-	NBlock &block;
+	shared_ptr<NIdentifier> type;
+    shared_ptr<NIdentifier> id;
+	shared_ptr<VariableList> arguments = make_shared<VariableList>();
+	shared_ptr<NBlock> block;
 
-	NFunctionDeclaration(const NIdentifier &type, const NIdentifier &id, const VariableList &arguments, NBlock &block)
+    NFunctionDeclaration(){}
+
+	NFunctionDeclaration(shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id, shared_ptr<VariableList> arguments, shared_ptr<NBlock> block)
 		: type(type), id(id), arguments(arguments), block(block) {
-        assert(type.isType);
+        assert(type->isType);
 	}
 
 	string getTypeName() const override {
@@ -303,23 +326,25 @@ public:
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
 
-		type.print(nextPrefix);
-		id.print(nextPrefix);
+		type->print(nextPrefix);
+		id->print(nextPrefix);
 
-		for(auto it=arguments.begin(); it!=arguments.end(); it++){
+		for(auto it=arguments->begin(); it!=arguments->end(); it++){
 			(*it)->print(nextPrefix);
 		}
-		block.print(nextPrefix);
+		block->print(nextPrefix);
 	}
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
 class NStructDeclaration: public NStatement{
 public:
-    const NIdentifier name;
-    VariableList members;
+    shared_ptr<NIdentifier> name;
+    shared_ptr<VariableList> members = make_shared<VariableList>();
 
-    NStructDeclaration(const NIdentifier& id, const VariableList& arguments)
+    NStructDeclaration(){}
+
+    NStructDeclaration(shared_ptr<NIdentifier>  id, shared_ptr<VariableList> arguments)
             : name(id), members(arguments){
 
     }
@@ -330,9 +355,9 @@ public:
 
     void print(string prefix) const override {
         string nextPrefix = prefix+this->m_PREFIX;
-        cout << prefix << getTypeName() << this->m_DELIM << this->name.name << endl;
+        cout << prefix << getTypeName() << this->m_DELIM << this->name->name << endl;
 
-        for(auto it=members.begin(); it!=members.end(); it++){
+        for(auto it=members->begin(); it!=members->end(); it++){
             (*it)->print(nextPrefix);
         }
     }
@@ -342,9 +367,11 @@ public:
 
 class NReturnStatement: public NStatement{
 public:
-    NExpression &expression;
+    shared_ptr<NExpression> expression;
 
-    NReturnStatement(NExpression& expression)
+    NReturnStatement(){}
+
+    NReturnStatement(shared_ptr<NExpression>  expression)
             : expression(expression) {
 
     }
@@ -362,12 +389,14 @@ public:
 class NIfStatement: public NStatement{
 public:
 
-    NExpression& condition;
-    NBlock* trueBlock;          // should not be null
-    NBlock* falseBlock;         // can be null
+    shared_ptr<NExpression>  condition;
+    shared_ptr<NBlock> trueBlock;          // should not be null
+    shared_ptr<NBlock> falseBlock;         // can be null
 
 
-    NIfStatement(NExpression& cond, NBlock* blk, NBlock* blk2 = nullptr)
+    NIfStatement(){}
+
+    NIfStatement(shared_ptr<NExpression>  cond, shared_ptr<NBlock> blk, shared_ptr<NBlock> blk2 = nullptr)
             : condition(cond), trueBlock(blk), falseBlock(blk2){
 
     }
@@ -381,7 +410,7 @@ public:
         string nextPrefix = prefix + this->m_PREFIX;
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
-        condition.print(nextPrefix);
+        condition->print(nextPrefix);
 
         trueBlock->print(nextPrefix);
 
@@ -399,13 +428,15 @@ public:
 
 class NForStatement: public NStatement{
 public:
-    NExpression * initial, * condition, * increment;
-    NBlock & block;
+    shared_ptr<NExpression> initial, condition, increment;
+    shared_ptr<NBlock>  block;
 
-    NForStatement(NBlock& b, NExpression* init = nullptr, NExpression* cond = nullptr, NExpression* incre = nullptr)
+    NForStatement(){}
+
+    NForStatement(shared_ptr<NBlock> b, shared_ptr<NExpression> init = nullptr, shared_ptr<NExpression> cond = nullptr, shared_ptr<NExpression> incre = nullptr)
             : block(b), initial(init), condition(cond), increment(incre){
         if( condition == nullptr ){
-            condition = new NInteger(1);
+            condition = make_shared<NInteger>(1);
         }
     }
 
@@ -425,7 +456,7 @@ public:
         if( increment )
             increment->print(nextPrefix);
 
-        block.print(nextPrefix);
+        block->print(nextPrefix);
     }
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
@@ -434,10 +465,12 @@ public:
 
 class NStructMember: public NExpression{
 public:
-	const NIdentifier& id;
-	const NIdentifier& member;
+	shared_ptr<NIdentifier> id;
+	shared_ptr<NIdentifier> member;
 
-    NStructMember(const NIdentifier &structName, const NIdentifier &member)
+    NStructMember(){}
+    
+    NStructMember(shared_ptr<NIdentifier> structName, shared_ptr<NIdentifier>member)
             : id(structName),member(member) {
     }
 
@@ -450,8 +483,8 @@ public:
         string nextPrefix = prefix + this->m_PREFIX;
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
-        id.print(nextPrefix);
-        member.print(nextPrefix);
+        id->print(nextPrefix);
+        member->print(nextPrefix);
     }
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
@@ -460,10 +493,12 @@ public:
 
 class NArrayIndex: public NExpression{
 public:
-    const NIdentifier& arrayName;
-    NExpression& expression;
+    shared_ptr<NIdentifier>  arrayName;
+    shared_ptr<NExpression>  expression;
 
-    NArrayIndex(const NIdentifier& name, NExpression& exp)
+    NArrayIndex(){}
+
+    NArrayIndex(shared_ptr<NIdentifier>  name, shared_ptr<NExpression>  exp)
             : arrayName(name), expression(exp){
 
     }
@@ -477,8 +512,8 @@ public:
         string nextPrefix = prefix + this->m_PREFIX;
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
-        arrayName.print(nextPrefix);
-        expression.print(nextPrefix);
+        arrayName->print(nextPrefix);
+        expression->print(nextPrefix);
     }
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
@@ -487,10 +522,12 @@ public:
 
 class NArrayAssignment: public NExpression{
 public:
-    const NArrayIndex& arrayIndex;
-    NExpression& expression;
+    shared_ptr<NArrayIndex> arrayIndex;
+    shared_ptr<NExpression>  expression;
 
-    NArrayAssignment(const NArrayIndex& index, NExpression& exp)
+    NArrayAssignment(){}
+
+    NArrayAssignment(shared_ptr<NArrayIndex> index, shared_ptr<NExpression>  exp)
             : arrayIndex(index), expression(exp){
 
     }
@@ -504,8 +541,8 @@ public:
         string nextPrefix = prefix + this->m_PREFIX;
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
-        arrayIndex.print(nextPrefix);
-        expression.print(nextPrefix);
+        arrayIndex->print(nextPrefix);
+        expression->print(nextPrefix);
     }
 
 
@@ -516,10 +553,12 @@ public:
 class NArrayInitialization: public NStatement{
 public:
 
-    shared_ptr<NVariableDeclaration> declaration;
-    ExpressionList expressionList;
+    NArrayInitialization(){}
 
-    NArrayInitialization(shared_ptr<NVariableDeclaration> dec, ExpressionList& list)
+    shared_ptr<NVariableDeclaration> declaration;
+    shared_ptr<ExpressionList> expressionList = make_shared<ExpressionList>();
+
+    NArrayInitialization(shared_ptr<NVariableDeclaration> dec, shared_ptr<ExpressionList> list)
             : declaration(dec), expressionList(list){
 
     }
@@ -534,7 +573,7 @@ public:
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
         declaration->print(nextPrefix);
-        for(auto it=expressionList.begin(); it!=expressionList.end(); it++){
+        for(auto it=expressionList->begin(); it!=expressionList->end(); it++){
             (*it)->print(nextPrefix);
         }
     }
@@ -546,10 +585,12 @@ public:
 
 class NStructAssignment: public NExpression{
 public:
-    const NStructMember& structMember;
-    NExpression& expression;
+    shared_ptr<NStructMember> structMember;
+    shared_ptr<NExpression>  expression;
 
-    NStructAssignment(const NStructMember& member, NExpression& exp)
+    NStructAssignment(){}
+
+    NStructAssignment(shared_ptr<NStructMember> member, shared_ptr<NExpression>  exp)
             : structMember(member), expression(exp){
 
     }
@@ -563,8 +604,8 @@ public:
         string nextPrefix = prefix + this->m_PREFIX;
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
-        structMember.print(nextPrefix);
-        expression.print(nextPrefix);
+        structMember->print(nextPrefix);
+        expression->print(nextPrefix);
     }
 
     llvm::Value *codeGen(CodeGenContext &context) override ;

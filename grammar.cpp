@@ -161,19 +161,18 @@ union YYSTYPE
 {
 #line 12 "grammar.y" /* yacc.c:355  */
 
-	Node* node;
 	NBlock* block;
 	NExpression* expr;
 	NStatement* stmt;
 	NIdentifier* ident;
 	NVariableDeclaration* var_decl;
 	NArrayIndex* index;
-	std::vector<NVariableDeclaration*>* varvec;
-	std::vector<NExpression*>* exprvec;
+	std::vector<shared_ptr<NVariableDeclaration>>* varvec;
+	std::vector<shared_ptr<NExpression>>* exprvec;
 	std::string* string;
 	int token;
 
-#line 177 "grammar.cpp" /* yacc.c:355  */
+#line 176 "grammar.cpp" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -190,7 +189,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 194 "grammar.cpp" /* yacc.c:358  */
+#line 193 "grammar.cpp" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -492,14 +491,14 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    46,    46,    48,    49,    51,    51,    51,    52,    53,
-      54,    55,    56,    59,    60,    63,    64,    65,    66,    67,
-      68,    70,    71,    76,    81,    82,    83,    88,    92,    93,
-      94,    97,   100,   101,   103,   104,   105,   106,   107,   108,
-     109,   110,   111,   114,   116,   117,   120,   126,   127,   128,
-     129,   129,   129,   129,   129,   129,   130,   130,   130,   130,
-     130,   130,   130,   130,   130,   130,   132,   133,   134,   140,
-     142,   144,   146,   147,   148
+       0,    45,    45,    47,    48,    50,    50,    50,    51,    52,
+      53,    54,    55,    58,    59,    62,    63,    64,    65,    66,
+      67,    69,    70,    75,    80,    81,    82,    87,    91,    92,
+      93,    96,    99,   100,   102,   103,   104,   105,   106,   107,
+     108,   109,   110,   113,   115,   116,   119,   125,   126,   127,
+     128,   128,   128,   128,   128,   128,   129,   129,   129,   129,
+     129,   129,   129,   129,   129,   129,   131,   132,   133,   139,
+     141,   143,   145,   146,   147
 };
 #endif
 
@@ -1412,325 +1411,325 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 46 "grammar.y" /* yacc.c:1661  */
+#line 45 "grammar.y" /* yacc.c:1661  */
     { programBlock = (yyvsp[0].block); }
-#line 1418 "grammar.cpp" /* yacc.c:1661  */
+#line 1417 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 3:
-#line 48 "grammar.y" /* yacc.c:1661  */
-    { (yyval.block) = new NBlock(); (yyval.block)->statements.push_back((yyvsp[0].stmt)); }
-#line 1424 "grammar.cpp" /* yacc.c:1661  */
+#line 47 "grammar.y" /* yacc.c:1661  */
+    { (yyval.block) = new NBlock(); (yyval.block)->statements->push_back(shared_ptr<NStatement>((yyvsp[0].stmt))); }
+#line 1423 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 4:
-#line 49 "grammar.y" /* yacc.c:1661  */
-    { (yyvsp[-1].block)->statements.push_back((yyvsp[0].stmt)); }
-#line 1430 "grammar.cpp" /* yacc.c:1661  */
+#line 48 "grammar.y" /* yacc.c:1661  */
+    { (yyvsp[-1].block)->statements->push_back(shared_ptr<NStatement>((yyvsp[0].stmt))); }
+#line 1429 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 8:
-#line 52 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NExpressionStatement(*(yyvsp[0].expr)); }
-#line 1436 "grammar.cpp" /* yacc.c:1661  */
+#line 51 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NExpressionStatement(shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1435 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 9:
-#line 53 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NReturnStatement(*(yyvsp[0].expr)); }
-#line 1442 "grammar.cpp" /* yacc.c:1661  */
+#line 52 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NReturnStatement(shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1441 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 13:
-#line 59 "grammar.y" /* yacc.c:1661  */
+#line 58 "grammar.y" /* yacc.c:1661  */
     { (yyval.block) = (yyvsp[-1].block); }
-#line 1448 "grammar.cpp" /* yacc.c:1661  */
+#line 1447 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 14:
-#line 60 "grammar.y" /* yacc.c:1661  */
+#line 59 "grammar.y" /* yacc.c:1661  */
     { (yyval.block) = new NBlock(); }
-#line 1454 "grammar.cpp" /* yacc.c:1661  */
+#line 1453 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 15:
-#line 63 "grammar.y" /* yacc.c:1661  */
+#line 62 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1460 "grammar.cpp" /* yacc.c:1661  */
+#line 1459 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 16:
-#line 64 "grammar.y" /* yacc.c:1661  */
+#line 63 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1466 "grammar.cpp" /* yacc.c:1661  */
+#line 1465 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 17:
-#line 65 "grammar.y" /* yacc.c:1661  */
+#line 64 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1472 "grammar.cpp" /* yacc.c:1661  */
+#line 1471 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 18:
-#line 66 "grammar.y" /* yacc.c:1661  */
+#line 65 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1478 "grammar.cpp" /* yacc.c:1661  */
+#line 1477 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 19:
-#line 67 "grammar.y" /* yacc.c:1661  */
+#line 66 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1484 "grammar.cpp" /* yacc.c:1661  */
+#line 1483 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 20:
-#line 68 "grammar.y" /* yacc.c:1661  */
+#line 67 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1490 "grammar.cpp" /* yacc.c:1661  */
+#line 1489 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 21:
-#line 70 "grammar.y" /* yacc.c:1661  */
+#line 69 "grammar.y" /* yacc.c:1661  */
     { (yyvsp[0].ident)->isType = true; (yyval.ident) = (yyvsp[0].ident); }
-#line 1496 "grammar.cpp" /* yacc.c:1661  */
+#line 1495 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 22:
-#line 71 "grammar.y" /* yacc.c:1661  */
+#line 70 "grammar.y" /* yacc.c:1661  */
     { 
 				(yyvsp[-3].ident)->isType = true; (yyvsp[-3].ident)->isArray = true; 
 				(yyvsp[-3].ident)->arraySize = make_shared<NInteger>(atol((yyvsp[-1].string)->c_str())); 
 				(yyval.ident) = (yyvsp[-3].ident); 
 			}
-#line 1506 "grammar.cpp" /* yacc.c:1661  */
+#line 1505 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 23:
-#line 76 "grammar.y" /* yacc.c:1661  */
+#line 75 "grammar.y" /* yacc.c:1661  */
     {
 				(yyvsp[0].ident)->isType = true;
 				(yyval.ident) = (yyvsp[0].ident);
 			}
-#line 1515 "grammar.cpp" /* yacc.c:1661  */
+#line 1514 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 24:
-#line 81 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NVariableDeclaration(*(yyvsp[-1].ident), *(yyvsp[0].ident), nullptr); }
-#line 1521 "grammar.cpp" /* yacc.c:1661  */
+#line 80 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NVariableDeclaration(shared_ptr<NIdentifier>((yyvsp[-1].ident)), shared_ptr<NIdentifier>((yyvsp[0].ident)), nullptr); }
+#line 1520 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 25:
-#line 82 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NVariableDeclaration(*(yyvsp[-3].ident), *(yyvsp[-2].ident), (yyvsp[0].expr)); }
-#line 1527 "grammar.cpp" /* yacc.c:1661  */
+#line 81 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NVariableDeclaration(shared_ptr<NIdentifier>((yyvsp[-3].ident)), shared_ptr<NIdentifier>((yyvsp[-2].ident)), shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1526 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 26:
-#line 83 "grammar.y" /* yacc.c:1661  */
+#line 82 "grammar.y" /* yacc.c:1661  */
     {
-					 (yyval.stmt) = new NArrayInitialization(make_shared<NVariableDeclaration>(NVariableDeclaration(*(yyvsp[-5].ident), *(yyvsp[-4].ident), nullptr)), *(yyvsp[-1].exprvec));
+					 (yyval.stmt) = new NArrayInitialization(make_shared<NVariableDeclaration>(shared_ptr<NIdentifier>((yyvsp[-5].ident)), shared_ptr<NIdentifier>((yyvsp[-4].ident)), nullptr), shared_ptr<ExpressionList>((yyvsp[-1].exprvec)));
 				 }
-#line 1535 "grammar.cpp" /* yacc.c:1661  */
+#line 1534 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 27:
-#line 89 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NFunctionDeclaration(*(yyvsp[-5].ident), *(yyvsp[-4].ident), *(yyvsp[-2].varvec), *(yyvsp[0].block)); delete (yyvsp[-2].varvec); }
-#line 1541 "grammar.cpp" /* yacc.c:1661  */
+#line 88 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NFunctionDeclaration(shared_ptr<NIdentifier>((yyvsp[-5].ident)), shared_ptr<NIdentifier>((yyvsp[-4].ident)), shared_ptr<VariableList>((yyvsp[-2].varvec)), shared_ptr<NBlock>((yyvsp[0].block)));  }
+#line 1540 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 28:
-#line 92 "grammar.y" /* yacc.c:1661  */
+#line 91 "grammar.y" /* yacc.c:1661  */
     { (yyval.varvec) = new VariableList(); }
-#line 1547 "grammar.cpp" /* yacc.c:1661  */
+#line 1546 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 29:
-#line 93 "grammar.y" /* yacc.c:1661  */
-    { (yyval.varvec) = new VariableList(); (yyval.varvec)->push_back((yyvsp[0].var_decl)); }
-#line 1553 "grammar.cpp" /* yacc.c:1661  */
+#line 92 "grammar.y" /* yacc.c:1661  */
+    { (yyval.varvec) = new VariableList(); (yyval.varvec)->push_back(shared_ptr<NVariableDeclaration>((yyvsp[0].var_decl))); }
+#line 1552 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 30:
-#line 94 "grammar.y" /* yacc.c:1661  */
-    { (yyvsp[-2].varvec)->push_back((yyvsp[0].var_decl)); }
-#line 1559 "grammar.cpp" /* yacc.c:1661  */
+#line 93 "grammar.y" /* yacc.c:1661  */
+    { (yyvsp[-2].varvec)->push_back(shared_ptr<NVariableDeclaration>((yyvsp[0].var_decl))); }
+#line 1558 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 31:
-#line 97 "grammar.y" /* yacc.c:1661  */
+#line 96 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = new NIdentifier(*(yyvsp[0].string)); delete (yyvsp[0].string); }
-#line 1565 "grammar.cpp" /* yacc.c:1661  */
+#line 1564 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 32:
-#line 100 "grammar.y" /* yacc.c:1661  */
-    { (yyval.expr) = new NInteger(atol((yyvsp[0].string)->c_str())); delete (yyvsp[0].string); }
-#line 1571 "grammar.cpp" /* yacc.c:1661  */
+#line 99 "grammar.y" /* yacc.c:1661  */
+    { (yyval.expr) = new NInteger(atol((yyvsp[0].string)->c_str())); }
+#line 1570 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 33:
-#line 101 "grammar.y" /* yacc.c:1661  */
-    { (yyval.expr) = new NDouble(atof((yyvsp[0].string)->c_str())); delete (yyvsp[0].string); }
-#line 1577 "grammar.cpp" /* yacc.c:1661  */
+#line 100 "grammar.y" /* yacc.c:1661  */
+    { (yyval.expr) = new NDouble(atof((yyvsp[0].string)->c_str())); }
+#line 1576 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 34:
-#line 103 "grammar.y" /* yacc.c:1661  */
+#line 102 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = (yyvsp[0].expr); }
-#line 1583 "grammar.cpp" /* yacc.c:1661  */
+#line 1582 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 35:
-#line 104 "grammar.y" /* yacc.c:1661  */
-    { (yyval.expr) = new NMethodCall(*(yyvsp[-3].ident), *(yyvsp[-1].exprvec)); delete (yyvsp[-1].exprvec); }
-#line 1589 "grammar.cpp" /* yacc.c:1661  */
+#line 103 "grammar.y" /* yacc.c:1661  */
+    { (yyval.expr) = new NMethodCall(shared_ptr<NIdentifier>((yyvsp[-3].ident)), shared_ptr<ExpressionList>((yyvsp[-1].exprvec))); }
+#line 1588 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 36:
-#line 105 "grammar.y" /* yacc.c:1661  */
+#line 104 "grammar.y" /* yacc.c:1661  */
     { (yyval.ident) = (yyvsp[0].ident); }
-#line 1595 "grammar.cpp" /* yacc.c:1661  */
+#line 1594 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 37:
-#line 106 "grammar.y" /* yacc.c:1661  */
-    { (yyval.expr) = new NStructMember(*(yyvsp[-2].ident), *(yyvsp[0].ident)); }
-#line 1601 "grammar.cpp" /* yacc.c:1661  */
+#line 105 "grammar.y" /* yacc.c:1661  */
+    { (yyval.expr) = new NStructMember(shared_ptr<NIdentifier>((yyvsp[-2].ident)), shared_ptr<NIdentifier>((yyvsp[0].ident))); }
+#line 1600 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 39:
-#line 108 "grammar.y" /* yacc.c:1661  */
-    { (yyval.expr) = new NBinaryOperator(*(yyvsp[-2].expr), (yyvsp[-1].token), *(yyvsp[0].expr)); }
-#line 1607 "grammar.cpp" /* yacc.c:1661  */
+#line 107 "grammar.y" /* yacc.c:1661  */
+    { (yyval.expr) = new NBinaryOperator(shared_ptr<NExpression>((yyvsp[-2].expr)), (yyvsp[-1].token), shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1606 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 40:
-#line 109 "grammar.y" /* yacc.c:1661  */
+#line 108 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1613 "grammar.cpp" /* yacc.c:1661  */
+#line 1612 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 41:
-#line 110 "grammar.y" /* yacc.c:1661  */
+#line 109 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = nullptr; /* TODO */ }
-#line 1619 "grammar.cpp" /* yacc.c:1661  */
+#line 1618 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 42:
-#line 111 "grammar.y" /* yacc.c:1661  */
+#line 110 "grammar.y" /* yacc.c:1661  */
     { (yyval.expr) = (yyvsp[0].index); }
-#line 1625 "grammar.cpp" /* yacc.c:1661  */
+#line 1624 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 43:
-#line 114 "grammar.y" /* yacc.c:1661  */
-    { (yyval.index) = new NArrayIndex(*(yyvsp[-3].ident), *(yyvsp[-1].expr)); }
-#line 1631 "grammar.cpp" /* yacc.c:1661  */
+#line 113 "grammar.y" /* yacc.c:1661  */
+    { (yyval.index) = new NArrayIndex(shared_ptr<NIdentifier>((yyvsp[-3].ident)), shared_ptr<NExpression>((yyvsp[-1].expr))); }
+#line 1630 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 44:
-#line 116 "grammar.y" /* yacc.c:1661  */
-    { (yyval.expr) = new NAssignment(*(yyvsp[-2].ident), *(yyvsp[0].expr)); }
-#line 1637 "grammar.cpp" /* yacc.c:1661  */
+#line 115 "grammar.y" /* yacc.c:1661  */
+    { (yyval.expr) = new NAssignment(shared_ptr<NIdentifier>((yyvsp[-2].ident)), shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1636 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 45:
-#line 117 "grammar.y" /* yacc.c:1661  */
+#line 116 "grammar.y" /* yacc.c:1661  */
     {
-				(yyval.expr) = new NArrayAssignment(*(yyvsp[-2].index), *(yyvsp[0].expr));
+				(yyval.expr) = new NArrayAssignment(shared_ptr<NArrayIndex>((yyvsp[-2].index)), shared_ptr<NExpression>((yyvsp[0].expr)));
 			}
-#line 1645 "grammar.cpp" /* yacc.c:1661  */
+#line 1644 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 46:
-#line 120 "grammar.y" /* yacc.c:1661  */
+#line 119 "grammar.y" /* yacc.c:1661  */
     {
-				auto member = new NStructMember(*(yyvsp[-4].ident), *(yyvsp[-2].ident)); 
-				(yyval.expr) = new NStructAssignment(*member, *(yyvsp[0].expr)); 
+				auto member = make_shared<NStructMember>(shared_ptr<NIdentifier>((yyvsp[-4].ident)), shared_ptr<NIdentifier>((yyvsp[-2].ident))); 
+				(yyval.expr) = new NStructAssignment(member, shared_ptr<NExpression>((yyvsp[0].expr))); 
 			}
-#line 1654 "grammar.cpp" /* yacc.c:1661  */
+#line 1653 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 47:
-#line 126 "grammar.y" /* yacc.c:1661  */
+#line 125 "grammar.y" /* yacc.c:1661  */
     { (yyval.exprvec) = new ExpressionList(); }
-#line 1660 "grammar.cpp" /* yacc.c:1661  */
+#line 1659 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 48:
-#line 127 "grammar.y" /* yacc.c:1661  */
-    { (yyval.exprvec) = new ExpressionList(); (yyval.exprvec)->push_back((yyvsp[0].expr)); }
-#line 1666 "grammar.cpp" /* yacc.c:1661  */
+#line 126 "grammar.y" /* yacc.c:1661  */
+    { (yyval.exprvec) = new ExpressionList(); (yyval.exprvec)->push_back(shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1665 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 49:
-#line 128 "grammar.y" /* yacc.c:1661  */
-    { (yyvsp[-2].exprvec)->push_back((yyvsp[0].expr)); }
-#line 1672 "grammar.cpp" /* yacc.c:1661  */
+#line 127 "grammar.y" /* yacc.c:1661  */
+    { (yyvsp[-2].exprvec)->push_back(shared_ptr<NExpression>((yyvsp[0].expr))); }
+#line 1671 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 66:
-#line 132 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NIfStatement(*(yyvsp[-1].expr), (yyvsp[0].block)); }
-#line 1678 "grammar.cpp" /* yacc.c:1661  */
+#line 131 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NIfStatement(shared_ptr<NExpression>((yyvsp[-1].expr)), shared_ptr<NBlock>((yyvsp[0].block))); }
+#line 1677 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 67:
-#line 133 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NIfStatement(*(yyvsp[-3].expr), (yyvsp[-2].block), (yyvsp[0].block)); }
-#line 1684 "grammar.cpp" /* yacc.c:1661  */
+#line 132 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NIfStatement(shared_ptr<NExpression>((yyvsp[-3].expr)), shared_ptr<NBlock>((yyvsp[-2].block)), shared_ptr<NBlock>((yyvsp[0].block))); }
+#line 1683 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 68:
-#line 134 "grammar.y" /* yacc.c:1661  */
+#line 133 "grammar.y" /* yacc.c:1661  */
     { 
 			auto blk = new NBlock(); 
-			blk->statements.push_back((yyvsp[0].stmt)); 
-			(yyval.stmt) = new NIfStatement(*(yyvsp[-3].expr), (yyvsp[-2].block), blk); 
+			blk->statements->push_back(shared_ptr<NStatement>((yyvsp[0].stmt))); 
+			(yyval.stmt) = new NIfStatement(shared_ptr<NExpression>((yyvsp[-3].expr)), shared_ptr<NBlock>((yyvsp[-2].block)), shared_ptr<NBlock>(blk)); 
 		}
-#line 1694 "grammar.cpp" /* yacc.c:1661  */
+#line 1693 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 69:
-#line 140 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NForStatement(*(yyvsp[0].block), (yyvsp[-6].expr), (yyvsp[-4].expr), (yyvsp[-2].expr)); }
-#line 1700 "grammar.cpp" /* yacc.c:1661  */
+#line 139 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NForStatement(shared_ptr<NBlock>((yyvsp[0].block)), shared_ptr<NExpression>((yyvsp[-6].expr)), shared_ptr<NExpression>((yyvsp[-4].expr)), shared_ptr<NExpression>((yyvsp[-2].expr))); }
+#line 1699 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 70:
-#line 142 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NForStatement(*(yyvsp[0].block), nullptr, (yyvsp[-2].expr), nullptr); }
-#line 1706 "grammar.cpp" /* yacc.c:1661  */
+#line 141 "grammar.y" /* yacc.c:1661  */
+    { (yyval.stmt) = new NForStatement(shared_ptr<NBlock>((yyvsp[0].block)), nullptr, shared_ptr<NExpression>((yyvsp[-2].expr)), nullptr); }
+#line 1705 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 71:
-#line 144 "grammar.y" /* yacc.c:1661  */
-    { (yyval.stmt) = new NStructDeclaration(*(yyvsp[-3].ident), *(yyvsp[-1].varvec)); delete (yyvsp[-1].varvec); }
-#line 1712 "grammar.cpp" /* yacc.c:1661  */
+#line 143 "grammar.y" /* yacc.c:1661  */
+    {(yyval.stmt) = new NStructDeclaration(shared_ptr<NIdentifier>((yyvsp[-3].ident)), shared_ptr<VariableList>((yyvsp[-1].varvec))); }
+#line 1711 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 72:
-#line 146 "grammar.y" /* yacc.c:1661  */
+#line 145 "grammar.y" /* yacc.c:1661  */
     { (yyval.varvec) = new VariableList(); }
-#line 1718 "grammar.cpp" /* yacc.c:1661  */
+#line 1717 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 73:
-#line 147 "grammar.y" /* yacc.c:1661  */
-    { (yyval.varvec) = new VariableList(); (yyval.varvec)->push_back((yyvsp[0].var_decl)); }
-#line 1724 "grammar.cpp" /* yacc.c:1661  */
+#line 146 "grammar.y" /* yacc.c:1661  */
+    { (yyval.varvec) = new VariableList(); (yyval.varvec)->push_back(shared_ptr<NVariableDeclaration>((yyvsp[0].var_decl))); }
+#line 1723 "grammar.cpp" /* yacc.c:1661  */
     break;
 
   case 74:
-#line 148 "grammar.y" /* yacc.c:1661  */
-    { (yyvsp[-1].varvec)->push_back((yyvsp[0].var_decl)); }
-#line 1730 "grammar.cpp" /* yacc.c:1661  */
+#line 147 "grammar.y" /* yacc.c:1661  */
+    { (yyvsp[-1].varvec)->push_back(shared_ptr<NVariableDeclaration>((yyvsp[0].var_decl))); }
+#line 1729 "grammar.cpp" /* yacc.c:1661  */
     break;
 
 
-#line 1734 "grammar.cpp" /* yacc.c:1661  */
+#line 1733 "grammar.cpp" /* yacc.c:1661  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1958,4 +1957,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 150 "grammar.y" /* yacc.c:1906  */
+#line 149 "grammar.y" /* yacc.c:1906  */

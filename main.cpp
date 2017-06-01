@@ -3,7 +3,7 @@
 #include "CodeGen.h"
 #include "ObjGen.h"
 
-extern NBlock* programBlock;
+extern shared_ptr<NBlock> programBlock;
 extern int yyparse();
 // extern void yyparse_init(const char* filename);
 // extern void yyparse_cleanup();

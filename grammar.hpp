@@ -98,19 +98,18 @@ union YYSTYPE
 {
 #line 12 "grammar.y" /* yacc.c:1915  */
 
-	Node* node;
 	NBlock* block;
 	NExpression* expr;
 	NStatement* stmt;
 	NIdentifier* ident;
 	NVariableDeclaration* var_decl;
 	NArrayIndex* index;
-	std::vector<NVariableDeclaration*>* varvec;
-	std::vector<NExpression*>* exprvec;
+	std::vector<shared_ptr<NVariableDeclaration>>* varvec;
+	std::vector<shared_ptr<NExpression>>* exprvec;
 	std::string* string;
 	int token;
 
-#line 114 "grammar.hpp" /* yacc.c:1915  */
+#line 113 "grammar.hpp" /* yacc.c:1915  */
 };
 
 typedef union YYSTYPE YYSTYPE;

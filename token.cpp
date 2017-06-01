@@ -517,7 +517,7 @@ char *yytext;
 #include <string>
 #include "ASTNodes.h"
 #include "grammar.hpp"
-#define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
+#define SAVE_TOKEN yylval.string = new string(yytext, yyleng)
 #define TOKEN(t) ( yylval.token = t)
 
 static FILE* yyparse_file_ptr;
