@@ -3,7 +3,7 @@
 #include <string>
 #include "ASTNodes.h"
 #include "grammar.hpp"
-#define SAVE_TOKEN yylval.string = new string(yytext, yyleng)
+#define SAVE_TOKEN yylval.string = new string(yytext)
 #define TOKEN(t) ( yylval.token = t)
 
 static FILE* yyparse_file_ptr;
@@ -37,10 +37,13 @@ static FILE* yyparse_file_ptr;
 "float"                 SAVE_TOKEN; puts("TYFLOAT"); return TYFLOAT;
 "char"                  SAVE_TOKEN; puts("TYCHAR"); return TYCHAR;
 "bool"                  SAVE_TOKEN; puts("TYBOOL"); return TYBOOL;
+"string"                SAVE_TOKEN; puts("TYSTRING"); return TYSTRING;
 "void"                  SAVE_TOKEN; puts("TYVOID"); return TYVOID;
+"extern"                SAVE_TOKEN; puts("TEXTERN"); return TEXTERN;
 [a-zA-Z_][a-zA-Z0-9_]*	SAVE_TOKEN; puts("TIDENTIFIER"); return TIDENTIFIER;
 [0-9]+\.[0-9]*			SAVE_TOKEN; puts("TDOUBLE"); return TDOUBLE;
 [0-9]+  				SAVE_TOKEN; puts("TINTEGER"); return TINTEGER;
+\"(\\.|[^"])*\"         SAVE_TOKEN; puts("TLITERAL"); return TLITERAL;
 "="						puts("TEQUAL"); return TOKEN(TEQUAL);
 "=="					puts("TCEQ"); return TOKEN(TCEQ);
 "!="                    puts("TCNE"); return TOKEN(TCNE);

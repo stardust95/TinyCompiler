@@ -18,11 +18,9 @@
 
 /*
  * TODO:
- *       2. fix memory leaks  <- share pointer
- *       3. unary ops
- *       4. variable declaration list
- *       5. char, string, bool types
- *       6. external function invoke
+ *       1. unary ops
+ *       2. variable declaration list
+ *       3. external function invoke
  *
  *
  */
@@ -186,35 +184,35 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
     }
     FunctionType* functionType = FunctionType::get(TypeOf(*this->type, context), argTypes, false);
     Function* function = Function::Create(functionType, GlobalValue::ExternalLinkage, this->id->name.c_str(), context.theModule.get());
-    BasicBlock* basicBlock = BasicBlock::Create(context.llvmContext, "entry", function, nullptr);
 
-    context.builder.SetInsertPoint(basicBlock);
-    context.pushBlock(basicBlock);
+    if( !this->isExternal ){
+        BasicBlock* basicBlock = BasicBlock::Create(context.llvmContext, "entry", function, nullptr);
 
-    // declare function params
-    auto origin_arg = this->arguments->begin();
+        context.builder.SetInsertPoint(basicBlock);
+        context.pushBlock(basicBlock);
 
-    for(auto &ir_arg_it: function->args()){
-        ir_arg_it.setName((*origin_arg)->id->name);
-        Value* argAlloc = (*origin_arg)->codeGen(context);
-        context.builder.CreateStore(&ir_arg_it, argAlloc, false);
-        context.setSymbolValue((*origin_arg)->id->name, argAlloc);
-        context.setSymbolType((*origin_arg)->id->name, (*origin_arg)->type->name);
-        origin_arg++;
+        // declare function params
+        auto origin_arg = this->arguments->begin();
+
+        for(auto &ir_arg_it: function->args()){
+            ir_arg_it.setName((*origin_arg)->id->name);
+            Value* argAlloc = (*origin_arg)->codeGen(context);
+            context.builder.CreateStore(&ir_arg_it, argAlloc, false);
+            context.setSymbolValue((*origin_arg)->id->name, argAlloc);
+            context.setSymbolType((*origin_arg)->id->name, (*origin_arg)->type->name);
+            origin_arg++;
+        }
+
+        this->block->codeGen(context);
+        if( context.getCurrentReturnValue() ){
+            context.builder.CreateRet(context.getCurrentReturnValue());
+        } else{
+            return LogErrorV("Function block return value not founded");
+        }
+        context.popBlock();
+
     }
 
-    this->block->codeGen(context);
-
-    if( context.getCurrentReturnValue() ){
-        context.builder.CreateRet(context.getCurrentReturnValue());
-
-//        verifyFunction(*function);
-
-    } else{
-        return LogErrorV("Function block return value not founded");
-    }
-
-    context.popBlock();
 
     return function;
 }
@@ -482,7 +480,6 @@ llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
     return context.builder.CreateStore(value, ptr);
 }
 
-
 llvm::Value *NArrayInitialization::codeGen(CodeGenContext &context) {
     auto arrayPtr = this->declaration->codeGen(context);
     for(int i=0; i < this->expressionList->size(); i++){
@@ -492,6 +489,10 @@ llvm::Value *NArrayInitialization::codeGen(CodeGenContext &context) {
         assignment.codeGen(context);
     }
     return nullptr;
+}
+
+llvm::Value *NLiteral::codeGen(CodeGenContext &context) {
+    return context.builder.CreateGlobalString(this->value, "string");
 }
 
 /*

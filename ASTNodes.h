@@ -6,6 +6,7 @@
 #include <vector>
 #include <llvm/IR/Value.h>
 #include <memory>
+#include <string>
 //puts("$1"); return $1;
 using std::cout;
 using std::endl;
@@ -310,11 +311,12 @@ public:
     shared_ptr<NIdentifier> id;
 	shared_ptr<VariableList> arguments = make_shared<VariableList>();
 	shared_ptr<NBlock> block;
+    bool isExternal = false;
 
     NFunctionDeclaration(){}
 
-	NFunctionDeclaration(shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id, shared_ptr<VariableList> arguments, shared_ptr<NBlock> block)
-		: type(type), id(id), arguments(arguments), block(block) {
+	NFunctionDeclaration(shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id, shared_ptr<VariableList> arguments, shared_ptr<NBlock> block, bool isExt = false)
+		: type(type), id(id), arguments(arguments), block(block), isExternal(isExt) {
         assert(type->isType);
 	}
 
@@ -332,7 +334,10 @@ public:
 		for(auto it=arguments->begin(); it!=arguments->end(); it++){
 			(*it)->print(nextPrefix);
 		}
-		block->print(nextPrefix);
+
+        assert(isExternal || block != nullptr);
+        if( block )
+		    block->print(nextPrefix);
 	}
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
@@ -608,10 +613,34 @@ public:
         expression->print(nextPrefix);
     }
 
-    llvm::Value *codeGen(CodeGenContext &context) override ;
+    llvm::Value *codeGen(CodeGenContext &context) override;
 
 };
 
+
+class NLiteral: public NExpression{
+public:
+    string value;
+
+    NLiteral(){}
+
+    NLiteral(const string &str) {
+        value = str.substr(1, str.length()-2);
+    }
+
+    string getTypeName() const override{
+        return "NLiteral";
+    }
+
+    void print(string prefix) const override{
+
+        cout << prefix << getTypeName() << this->m_DELIM << value << endl;
+
+    }
+
+    llvm::Value *codeGen(CodeGenContext &context) override;
+
+};
 
 
 std::unique_ptr<NExpression> LogError(const char* str);

@@ -22,9 +22,9 @@
 	int token;
 }
 
-%token <string> TIDENTIFIER TINTEGER TDOUBLE TYINT TYDOUBLE TYFLOAT TYCHAR TYBOOL TYVOID
+%token <string> TIDENTIFIER TINTEGER TDOUBLE TYINT TYDOUBLE TYFLOAT TYCHAR TYBOOL TYVOID TYSTRING TEXTERN TLITERAL
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL
-%token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON TLBRACKET TRBRACKET
+%token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON TLBRACKET TRBRACKET TQUOTATION
 %token <token> TPLUS TMINUS TMUL TDIV TAND TOR TXOR TMOD TNEG TNOT TSHIFTL TSHIFTR
 %token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
@@ -65,6 +65,7 @@ primary_typename : TYINT { $$ = new NIdentifier(*$1); delete $1; }
 					| TYCHAR { $$ = new NIdentifier(*$1); delete $1; }
 					| TYBOOL { $$ = new NIdentifier(*$1); delete $1; }
 					| TYVOID { $$ = new NIdentifier(*$1); delete $1; }
+					| TYSTRING { $$ = new NIdentifier(*$1); delete $1; }
 
 typename : primary_typename { $1->isType = true; $$ = $1; }
 			| primary_typename TLBRACKET TINTEGER TRBRACKET { 
@@ -85,8 +86,8 @@ var_decl : typename ident { $$ = new NVariableDeclaration(shared_ptr<NIdentifier
 				 ;
 
 func_decl : typename ident TLPAREN func_decl_args TRPAREN block
-					{ $$ = new NFunctionDeclaration(shared_ptr<NIdentifier>($1), shared_ptr<NIdentifier>($2), shared_ptr<VariableList>($4), shared_ptr<NBlock>($6));  }
-					;
+				{ $$ = new NFunctionDeclaration(shared_ptr<NIdentifier>($1), shared_ptr<NIdentifier>($2), shared_ptr<VariableList>($4), shared_ptr<NBlock>($6));  }
+			| TEXTERN typename ident TLPAREN func_decl_args TRPAREN { $$ = new NFunctionDeclaration(shared_ptr<NIdentifier>($2), shared_ptr<NIdentifier>($3), shared_ptr<VariableList>($5), nullptr, true); }
 
 func_decl_args : /* blank */ { $$ = new VariableList(); }
 							 | var_decl { $$ = new VariableList(); $$->push_back(shared_ptr<NVariableDeclaration>($<var_decl>1)); }
@@ -108,6 +109,7 @@ expr : 	assign { $$ = $1; }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
 		 | TMINUS expr { $$ = nullptr; /* TODO */ }
 		 | array_index { $$ = $1; }
+		 | TLITERAL { $$ = new NLiteral(*$1); delete $1; }
 		 ;
 
 array_index : ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(shared_ptr<NIdentifier>($1), shared_ptr<NExpression>($3)); }

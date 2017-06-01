@@ -3,9 +3,13 @@ struct Point{
     int y
 }
 
+extern int printf(string str)
+
 int do_math(int a) {
-  int x = a * 5
-  return x
+    int x = a * 5
+    string s = "asdasd"
+    printf("%d", x)
+    return x
 }
 
 int test(){
