@@ -23,7 +23,7 @@
 	int token;
 }
 
-%token <string> TIDENTIFIER TINTEGER TDOUBLE TYINT TYDOUBLE
+%token <string> TIDENTIFIER TINTEGER TDOUBLE TYINT TYDOUBLE TYFLOAT TYCHAR TYBOOL TYVOID
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE TEQUAL
 %token <token> TLPAREN TRPAREN TLBRACE TRBRACE TCOMMA TDOT TSEMICOLON TLBRACKET TRBRACKET
 %token <token> TPLUS TMINUS TMUL TDIV TAND TOR TXOR TMOD TNEG TNOT TSHIFTL TSHIFTR
@@ -60,8 +60,12 @@ block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
 
-primary_typename : TYINT { cout << *$1 << endl; $$ = new NIdentifier(*$1); delete $1; }
+primary_typename : TYINT { $$ = new NIdentifier(*$1); delete $1; }
 					| TYDOUBLE { $$ = new NIdentifier(*$1); delete $1; }
+					| TYFLOAT { $$ = new NIdentifier(*$1); delete $1; }
+					| TYCHAR { $$ = new NIdentifier(*$1); delete $1; }
+					| TYBOOL { $$ = new NIdentifier(*$1); delete $1; }
+					| TYVOID { $$ = new NIdentifier(*$1); delete $1; }
 
 typename : primary_typename { $1->isType = true; $$ = $1; }
 			| primary_typename TLBRACKET TINTEGER TRBRACKET { 

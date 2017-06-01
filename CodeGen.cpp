@@ -214,7 +214,6 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
         return LogErrorV("Function block return value not founded");
     }
 
-    // TODO: function parameter variables?
     context.popBlock();
 
     return function;
