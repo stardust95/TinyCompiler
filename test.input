@@ -4,36 +4,22 @@ struct Point{
 }
 
 extern int printf(string str)
+extern int puts(string str)
 
-int do_math(int a) {
-    int x = a * 5
-    string s = "asdasd"
-    printf("%d", x)
+int do_math(int[3] arr, int i) {
+    int x = arr[1] * 5
+    printf("result = %d", arr[1])
+    puts("")
     return x
 }
 
 int test(){
     int a = 3
     double b = 1 + 0.0
+    string s = "asdasd"
     struct Point p
-    int[3] arr = [ 1,2,3 ]
-    arr[1] = 3
-    if( a < b ){
-        int x = x << 2
-        a = arr[2]
-    }else{
-        a = a < 2
-        p.y = a
-        p.x = p.y
-    }
-    for( a=0; a<1; a=a+1){
-        b = 3
-    }
+    int[3] arr = [1,2,3]
 
-    while( a<2 ){
-        b = 2
-    }
-
-    int c = do_math(b)
+    int c = do_math(arr)
     return c
 }

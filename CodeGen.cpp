@@ -20,7 +20,7 @@
  * TODO:
  *       1. unary ops
  *       2. variable declaration list
- *       3. external function invoke
+ *       3. array type as function parameter
  *
  *
  */
@@ -165,10 +165,22 @@ llvm::Value* NIdentifier::codeGen(CodeGenContext &context) {
     cout << "Generating identifier " << this->name << endl;
     Value* value = context.getSymbolValue(this->name);
     if( !value ){
-        LogErrorV("Unknown variable name " + this->name);
+        return LogErrorV("Unknown variable name " + this->name);
     }
-//    return new LoadInst(context.locals()[this->name], "", false, context.currentBlock());
+    if( value->getType()->isPointerTy() ){
+        auto arrayPtr = context.builder.CreateLoad(value, "arrayPtr");
+        if( arrayPtr->getType()->isArrayTy() ){
+            cout << "(Array Type)" << endl;
+            arrayPtr->setAlignment(16);
+
+            std::vector<Value*> indices;
+            indices.push_back(ConstantInt::get(context.typeSystem.intTy, 0, false));
+            auto ptr = context.builder.CreateInBoundsGEP(value, indices, "arrayPtr");
+            return ptr;
+        }
+    }
     return context.builder.CreateLoad(value, false, "");
+
 }
 
 llvm::Value* NExpressionStatement::codeGen(CodeGenContext &context) {
@@ -180,7 +192,11 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
     std::vector<Type*> argTypes;
 
     for(auto &arg: *this->arguments){
-        argTypes.push_back(TypeOf(*arg->type, context));
+        if( arg->type->isArray ){
+            argTypes.push_back(PointerType::get(context.typeSystem.getVarType(arg->type->name), 0));
+        } else{
+            argTypes.push_back(TypeOf(*arg->type, context));
+        }
     }
     FunctionType* functionType = FunctionType::get(TypeOf(*this->type, context), argTypes, false);
     Function* function = Function::Create(functionType, GlobalValue::ExternalLinkage, this->id->name.c_str(), context.theModule.get());
@@ -196,7 +212,13 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
 
         for(auto &ir_arg_it: function->args()){
             ir_arg_it.setName((*origin_arg)->id->name);
-            Value* argAlloc = (*origin_arg)->codeGen(context);
+            //ir_arg_it.print(outs());
+            Value* argAlloc;
+            if( (*origin_arg)->type->isArray ){
+                argAlloc = context.builder.CreateAlloca(PointerType::get(context.typeSystem.getVarType((*origin_arg)->type->name), 0));
+            }else{
+                argAlloc = (*origin_arg)->codeGen(context);
+            }
             context.builder.CreateStore(&ir_arg_it, argAlloc, false);
             context.setSymbolValue((*origin_arg)->id->name, argAlloc);
             context.setSymbolType((*origin_arg)->id->name, (*origin_arg)->type->name);
@@ -440,7 +462,7 @@ llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
     auto arrayPtr = context.builder.CreateLoad(varPtr, "arrayPtr");
     arrayPtr->setAlignment(16);
 
-    if( !arrayPtr->getType()->isArrayTy() ){
+    if( !arrayPtr->getType()->isArrayTy() && !arrayPtr->getType()->isPointerTy() ){
         return LogErrorV("The variable is not array");
     }
 
@@ -466,7 +488,7 @@ llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
     auto arrayPtr = context.builder.CreateLoad(varPtr, "arrayPtr");
     arrayPtr->setAlignment(16);
 
-    if( !arrayPtr->getType()->isArrayTy() ){
+    if( !arrayPtr->getType()->isArrayTy() && !arrayPtr->getType()->isPointerTy() ){
         return LogErrorV("The variable is not array");
     }
 

@@ -84,8 +84,9 @@ void TypeSystem::addStructType(string name, llvm::StructType *type) {
 
 Type *TypeSystem::getVarType(const NIdentifier& type) {
     assert(type.isType);
-    if( type.isArray )
+    if( type.isArray ){     // array type when allocation, pointer type when pass parameters
         return ArrayType::get(getVarType(type.name), type.arraySize->value);
+    }
 
     return getVarType(type.name);
 
