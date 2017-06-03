@@ -7,19 +7,14 @@ extern int printf(string str)
 extern int puts(string str)
 
 int do_math(int[3] arr, int i) {
-    int x = arr[1] * 5
-    printf("result = %d", arr[1])
-    puts("")
-    return x
+    
+    
+    return 0
 }
 
-int test(){
-    int a = 3
-    double b = 1 + 0.0
-    string s = "asdasd"
-    struct Point p
-    int[3] arr = [1,2,3]
 
-    int c = do_math(arr)
-    return c
+int test(){
+    int[3] arr = [ 44,55,66 ]
+    printf("|%d,%d,%d|", arr[0], arr[1],arr[2])
+    return 0
 }

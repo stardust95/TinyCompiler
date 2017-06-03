@@ -36,3 +36,7 @@ compiler: $(OBJS)
 
 test: compiler test.input
 	cat test.input | ./compiler
+
+testlink: output.o testmain.cpp
+	clang output.o testmain.cpp -o test
+	./test
