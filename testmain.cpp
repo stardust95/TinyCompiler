@@ -17,7 +17,8 @@ struct Point{
 int main() {
     int arr[3] = {44,55,66};
     // int c = arr[1];
-    printf("|%d|\n", test(2));
+	printf("%p\n", arr+1);
+	do_math(arr,1);
 	return 0;
 	// int c = arr[2];
 	// printf("|%p|%d|\n", &(arr[1]), arr[1]);

@@ -8,13 +8,12 @@ extern int puts(string str)
 
 int do_math(int[3] arr, int i) {
     
-    
+    printf("%p|%d,%d,%d|", arr, arr[0], arr[1],arr[2])
     return 0
 }
 
 
 int test(){
     int[3] arr = [ 44,55,66 ]
-    printf("|%d,%d,%d|", arr[0], arr[1],arr[2])
     return 0
 }

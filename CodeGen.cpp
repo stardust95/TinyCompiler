@@ -217,13 +217,12 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
 
         for(auto &ir_arg_it: function->args()){
             ir_arg_it.setName((*origin_arg)->id->name);
-            //ir_arg_it.print(outs());
             Value* argAlloc;
-            if( (*origin_arg)->type->isArray ){
+            if( (*origin_arg)->type->isArray )
                 argAlloc = context.builder.CreateAlloca(PointerType::get(context.typeSystem.getVarType((*origin_arg)->type->name), 0));
-            }else{
+            else
                 argAlloc = (*origin_arg)->codeGen(context);
-            }
+
             context.builder.CreateStore(&ir_arg_it, argAlloc, false);
             context.setSymbolValue((*origin_arg)->id->name, argAlloc);
             context.setSymbolType((*origin_arg)->id->name, (*origin_arg)->type->name);
@@ -271,7 +270,7 @@ llvm::Value* NMethodCall::codeGen(CodeGenContext &context) {
         LogErrorV("Function name not found");
     }
     if( calleeF->arg_size() != this->arguments->size() ){
-        LogErrorV("Function arguments size not match");
+        LogErrorV("Function arguments size not match, calleeF=" + std::to_string(calleeF->size()) + ", this->arguments=" + std::to_string(this->arguments->size()) );
     }
     std::vector<Value*> argsv;
     for(auto it=this->arguments->begin(); it!=this->arguments->end(); it++){
@@ -466,23 +465,26 @@ llvm::Value* NStructAssignment::codeGen(CodeGenContext &context) {
 llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
     cout << "Generating array index expression of " << this->arrayName->name << endl;
     auto varPtr = context.getSymbolValue(this->arrayName->name);
-
-//    auto arrayPtr = context.builder.CreateLoad(varPtr, "arrayPtr");
-//    arrayPtr->setAlignment(16);
+    string typeStr = context.getSymbolType(this->arrayName->name);
 
     if( !varPtr->getType()->isArrayTy() && !varPtr->getType()->isPointerTy() ){
-        return LogErrorV("The variable is not array");
     }
 //    std::vector<Value*> indices;
     auto value = this->expression->codeGen(context);
-    ArrayRef<Value*> indices{ ConstantInt::get(Type::getInt64Ty(context.llvmContext), 0), value };
-//    indices.push_back(0);
-//    indices.push_back(value);
-//    auto ptr = context.builder.CreateExtractElement(varPtr, value, "elementPtr");
+    ArrayRef<Value*> indices;
+    if( varPtr->getType()->isArrayTy() ){
+        indices = { ConstantInt::get(Type::getInt64Ty(context.llvmContext), 0), value };
+    }else if( varPtr->getType()->isPointerTy() ){
+//        indices = { value };
+        varPtr = context.builder.CreateLoad(varPtr, "actualArrayPtr");
+        indices = { value };
+//        varPtr = context.builder.CreateBitCast(varPtr, Type::getInt32PtrTy(context.llvmContext, 0), "castedPtr");
+    }else{
+        return LogErrorV("The variable is not array");
+    }
     auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "elementPtr");
 
-//    ptr = context.builder.CreateBitCast(ptr, Type::getInt32PtrTy(context.llvmContext, 0), "castedPtr");
-//    ptr = context.builder.CreatePointerCast(ptr, PointerType::get(context.typeSystem.getVarType(this->arrayName->name), 0), "castedPtr");
+//    ptr = context.builder.CreateBitCast(ptr, PointerType::get(context.typeSystem.getVarType(typeStr), 0), "castedPtr");
     return context.builder.CreateAlignedLoad(ptr, 4);
 }
 
