@@ -617,7 +617,6 @@ public:
 
 };
 
-
 class NLiteral: public NExpression{
 public:
     string value;

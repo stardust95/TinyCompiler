@@ -29,7 +29,7 @@
 %token <token> TIF TELSE TFOR TWHILE TRETURN TSTRUCT
 
 %type <index> array_index
-%type <ident> ident typename primary_typename
+%type <ident> ident primary_typename array_typename struct_typename typename
 %type <expr> numeric expr assign
 %type <varvec> func_decl_args struct_members
 %type <exprvec> call_args
@@ -59,24 +59,32 @@ block : TLBRACE stmts TRBRACE { $$ = $2; }
 			| TLBRACE TRBRACE { $$ = new NBlock(); }
 			;
 
-primary_typename : TYINT { $$ = new NIdentifier(*$1); delete $1; }
-					| TYDOUBLE { $$ = new NIdentifier(*$1); delete $1; }
-					| TYFLOAT { $$ = new NIdentifier(*$1); delete $1; }
-					| TYCHAR { $$ = new NIdentifier(*$1); delete $1; }
-					| TYBOOL { $$ = new NIdentifier(*$1); delete $1; }
-					| TYVOID { $$ = new NIdentifier(*$1); delete $1; }
-					| TYSTRING { $$ = new NIdentifier(*$1); delete $1; }
+primary_typename : TYINT { $$ = new NIdentifier(*$1); $$->isType = true;  delete $1; }
+					| TYDOUBLE { $$ = new NIdentifier(*$1); $$->isType = true; delete $1; }
+					| TYFLOAT { $$ = new NIdentifier(*$1); $$->isType = true; delete $1; }
+					| TYCHAR { $$ = new NIdentifier(*$1); $$->isType = true; delete $1; }
+					| TYBOOL { $$ = new NIdentifier(*$1); $$->isType = true; delete $1; }
+					| TYVOID { $$ = new NIdentifier(*$1); $$->isType = true; delete $1; }
+					| TYSTRING { $$ = new NIdentifier(*$1); $$->isType = true; delete $1; }
 
-typename : primary_typename { $1->isType = true; $$ = $1; }
-			| primary_typename TLBRACKET TINTEGER TRBRACKET { 
-				$1->isType = true; $1->isArray = true; 
-				$1->arraySize = make_shared<NInteger>(atol($3->c_str())); 
-				$$ = $1; 
-			}
-			| TSTRUCT ident {
+array_typename : primary_typename TLBRACKET TINTEGER TRBRACKET { 
+					$1->isArray = true; 
+					$1->arraySize = make_shared<NInteger>(atol($3->c_str())); 
+					$$ = $1; 
+				}
+				| array_typename TLBRACKET TINTEGER TRBRACKET {
+					$1->arraySize->value *= atol($3->c_str());
+					$$ = $1;
+				}
+
+struct_typename : TSTRUCT ident {
 				$2->isType = true;
 				$$ = $2;
 			}
+
+typename : primary_typename { $$ = $1; }
+			| array_typename { $$ = $1; }
+			| struct_typename { $$ = $1; }
 
 var_decl : typename ident { $$ = new NVariableDeclaration(shared_ptr<NIdentifier>($1), shared_ptr<NIdentifier>($2), nullptr); }
 				 | typename ident TEQUAL expr { $$ = new NVariableDeclaration(shared_ptr<NIdentifier>($1), shared_ptr<NIdentifier>($2), shared_ptr<NExpression>($4)); }
@@ -113,7 +121,7 @@ expr : 	assign { $$ = $1; }
 		 ;
 
 array_index : ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(shared_ptr<NIdentifier>($1), shared_ptr<NExpression>($3)); }
-
+				| array_index TLBRACKET expr TRBRACKET { $1->expression = make_shared<NBinaryOperator>($1->expression, TMUL, shared_ptr<NExpression>($3)); $$ = $1; }
 assign : ident TEQUAL expr { $$ = new NAssignment(shared_ptr<NIdentifier>($1), shared_ptr<NExpression>($3)); }
 			| array_index TEQUAL expr {
 				$$ = new NArrayAssignment(shared_ptr<NArrayIndex>($1), shared_ptr<NExpression>($3));

@@ -2,7 +2,7 @@
 
 extern "C" {
     int do_math(int*, int);
-	int test(int);
+	int test();
 }
 
 int func(int arr[3]){
@@ -19,7 +19,7 @@ int main() {
     // int c = arr[1];
 	printf("%p\n", arr+1);
 	do_math(arr,1);
-	return 0;
+	test();
 	// int c = arr[2];
 	// printf("|%p|%d|\n", &(arr[1]), arr[1]);
 	// do_math(arr+1, 1);

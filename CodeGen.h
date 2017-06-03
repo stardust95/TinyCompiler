@@ -28,6 +28,7 @@ public:
     Value * returnValue;
     std::map<string, Value*> locals;
     std::map<string, string> types;     // type name string of vars
+    std::map<string, bool> isFuncArg;
 };
 
 class CodeGenContext{
@@ -65,6 +66,10 @@ public:
         return "";
     }
 
+    bool isFuncArg(string name) const{
+        return blockStack.back()->isFuncArg[name];
+    }
+
     void setSymbolValue(string name, Value* value){
         blockStack.back()->locals[name] = value;
     }
@@ -73,6 +78,9 @@ public:
         blockStack.back()->types[name] = value;
     }
 
+    void setFuncArg(string name, bool value){
+        blockStack.back()->isFuncArg[name] = value;
+    }
 
     BasicBlock* currentBlock() const{
         return blockStack.back()->block;

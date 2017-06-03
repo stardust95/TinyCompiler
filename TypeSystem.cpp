@@ -57,7 +57,6 @@ string TypeSystem::llvmTypeToStr(Value *value) {
         return llvmTypeToStr(value->getType());
     else
         return "Value is nullptr";
-
 }
 
 TypeSystem::TypeSystem(LLVMContext &context): llvmContext(context){
