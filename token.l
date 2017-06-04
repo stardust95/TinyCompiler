@@ -24,7 +24,7 @@ static FILE* yyparse_file_ptr;
 %option noyywrap
 
 %%
-
+"#".*                   ;
 [ \t\r\n]				;
 "if"                    puts("TIF"); return TOKEN(TIF);
 "else"                  puts("TELSE"); return TOKEN(TELSE);
