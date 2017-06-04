@@ -1,12 +1,13 @@
+
 # TinyCompiler
 
 ## 序言
 
-1. 项目概述
+1. 项目概述
 	
-    本项目是基于flex，bison以及LLVM，使用c++11实现的类C语法编译器，使用flex结合yacc对源代码进行词法、语法分析；在语法分析阶段生成整个源代码相应的抽象语法树后，根据LLVM IR（Intermediate Representation）模块中定义的中间代码语法输出符合LLVM中间语言语法、机器无关的中间代码；最后，本项目通过调用LLVM Back ends模块的接口，根据本地指令集与操作系统架构，将中间代码编译成二进制目标代码。编译生成的目标代码之后可直接编译生成可执行文件，或与其他目标代码链接生成可执行文件。
+    本项目是基于flex，bison以及LLVM，使用c++11实现的类C语法编译器，使用flex结合yacc对源代码进行词法、语法分析；在语法分析阶段生成整个源代码相应的抽象语法树后，根据LLVM IR（Intermediate Representation）模块中定义的中间代码语法输出符合LLVM中间语言语法、机器无关的中间代码；最后，本项目通过调用LLVM Back ends模块的接口，根据本地指令集与操作系统架构，将中间代码编译成二进制目标代码。编译生成的目标代码之后可直接编译生成可执行文件，或与其他目标代码链接生成可执行文件。
 
-    本项目解析的语法与是C语言的一个子集，但部分语法存在区别，这些将在最后的测试用例中具体说明。目前已支持的数据类型包括：
+    本项目解析的语法与是C语言的一个子集，但部分语法存在区别，这些将在最后的测试用例中具体说明。目前已支持的数据类型包括：
     - void
     - int
     - float
@@ -37,17 +38,17 @@
 3. 源代码结构
 
     TinyCompiler\
-    ├── ASTNodes.h 抽象语法树节点的定义\
-    ├── CodeGen.cpp 抽象语法树生成中间代码\
+    ├── ASTNodes.h 抽象语法树节点的定义\
+    ├── CodeGen.cpp 抽象语法树生成中间代码\
     ├── CodeGen.h\
     ├── Makefile\
     ├── ObjGen.cpp 中间代码生成目标代码\
     ├── ObjGen.h\
     ├── Readme.md\
-    ├── TypeSystem.cpp 类型系统实现\
+    ├── TypeSystem.cpp 类型系统实现\
     ├── TypeSystem.h\
-    ├── grammar.y 语法分析yacc文件\
-    ├── main.cpp TinyCompiler程序入口\
+    ├── grammar.y 语法分析yacc文件\
+    ├── main.cpp TinyCompiler程序入口\
     ├── test.input 用于测试词法、语法、语义分析的源代码\
     ├── testmain.cpp 用于测试链接目标文件的源代码\
     ├── token.l 词法分析lex文件\
@@ -61,16 +62,16 @@
     ```
     make
     ```
-    - 使用TinyCompiler编译test.c文件，将目标代码输出到output.o
+    - 使用TinyCompiler编译test.c文件，将目标代码输出到output.o
     ```
-    cat test.c | compiler
+    cat test.c | compiler
     ```
     用g++链接output.o生成可执行文件
     ```
     g++ output.o -o test
     ./test
     ```
-    使用test.input, testmain.cpp文件自动测试编译、链接
+    使用test.input, testmain.cpp文件自动测试编译、链接
     ```
     make test
     make testlink
@@ -86,10 +87,10 @@
 
 ------------
 
-## 语法定义
+## 语法定义
 
 
-本编译器实现的语法是类似标准C的语法，引入的几个区别包括：
+本编译器实现的语法是类似标准C的语法，引入的几个区别包括：
 - 去掉了标准C的每个语句后的分号
 - 不显式提供指针类型，但可以对变量取地址
 - 暂不支持多维数组初始化
@@ -133,7 +134,7 @@ int func(struct Point p){
 int test(){
     struct Point p
     p.x = 1
-    p.y = 3
+    p.y = 3
     func(p)
     return 0
 }
@@ -184,21 +185,21 @@ int testExtern(){
 
 - 实现方式
 
-    语法分析是本项目的关键环节之一。由于源代码是以字符串即字节流的形式存在的，难以进行后续的编译解释工作，因此我们需要将源代码转化成能够反映语法规则的数据结构，即抽象语法树（Abstract Syntax Tree，AST），之后才能利用抽象语法树进行语义分析，中间代码的生成。
+    语法分析是本项目的关键环节之一。由于源代码是以字符串即字节流的形式存在的，难以进行后续的编译解释工作，因此我们需要将源代码转化成能够反映语法规则的数据结构，即抽象语法树（Abstract Syntax Tree，AST），之后才能利用抽象语法树进行语义分析，中间代码的生成。
     
     抽象语法树实际上就是经过简化和抽象的语法分析树。在完整的语法分析树中每个推导过程的终结符都包含在语法树内，而且每个非终结符都是不同的节点类型。实际上，如果仅仅是要做编译器的话，很多终结符（如关键字、各种标点符号）是无需出现在语法树里的
 
 - 抽象语法树实现
 
-    首先我们需要针对每种类型的语法，如变量声明、变量赋值、函数定义、控制流定义等语法定义其相应的抽象语法树，以便能够将任意符合语法标准的源代码都能够转化成一棵抽象语法树。
+    首先我们需要针对每种类型的语法，如变量声明、变量赋值、函数定义、控制流定义等语法定义其相应的抽象语法树，以便能够将任意符合语法标准的源代码都能够转化成一棵抽象语法树。
 
     TinyCompiler支持语言的语法主要可以分为两类，有返回值的Expression——表达式，以及没有返回值的Statement——语句，这样一来所有合法的语法语句都可以归为表达式或语句中的一种。
     
-    因此，根据OOP思想，我们只需要定义抽象语法树的根节点Node类，以及两种语法对应的NStatement以及NExpression类，作为所有语法的抽象基类。之后所有语法对应的抽象语法树结点类，如表示For循环语句的NForStatement类，二元运算表达式的NBinaryOperator类，只需要继承这两个类中的一个并实现其接口即可。
+    因此，根据OOP思想，我们只需要定义抽象语法树的根节点Node类，以及两种语法对应的NStatement以及NExpression类，作为所有语法的抽象基类。之后所有语法对应的抽象语法树结点类，如表示For循环语句的NForStatement类，二元运算表达式的NBinaryOperator类，只需要继承这两个类中的一个并实现其接口即可。
 
-    现已实现的Expression即表达式类型包括整数、浮点数、变量、二元运算式、函数调用、数组元素、结构体、赋值、字符串，基本块；实现的Statement即语句类型包括变量定义、结构体定义、函数定义、表达式语句、if语句、for语句、数组初始化语句。
+    现已实现的Expression即表达式类型包括整数、浮点数、变量、二元运算式、函数调用、数组元素、结构体、赋值、字符串，基本块；实现的Statement即语句类型包括变量定义、结构体定义、函数定义、表达式语句、if语句、for语句、数组初始化语句。
     
-    为了增强程序的鲁棒性，避免出现内存泄漏，本项目使用C++11提供的shared_ptr智能指针代替所有成员的裸指针，用于维护本语法特有的成员字段。此外，每类AST节点除了要维护这些字段外，还需要实现一个codeGen函数，作为每种语法树生成相应LLVM中间代码的接口。
+    为了增强程序的鲁棒性，避免出现内存泄漏，本项目使用C++11提供的shared_ptr智能指针代替所有成员的裸指针，用于维护本语法特有的成员字段。此外，每类AST节点除了要维护这些字段外，还需要实现一个codeGen函数，作为每种语法树生成相应LLVM中间代码的接口。
     
     Node抽象基类节点的定义
     ```c++
@@ -220,11 +221,11 @@ int testExtern(){
 
     各个AST结点类的继承关系如下图所示。
 
-    ![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/graphs/ASTUML.jpg)    
+    ![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/graphs/ASTUML.jpg)    
     
-- bison代码实现
+- bison代码实现
 
-    bison（yacc）是基于类似于BNF的语法，使用定义的好终结符和非终结符来组成我们有效的每一个语句和表达式(这些语句和表达式就代表我们之前定义的AST节点)。例如：
+    bison（yacc）是基于类似于BNF的语法，使用定义的好终结符和非终结符来组成我们有效的每一个语句和表达式(这些语句和表达式就代表我们之前定义的AST节点)。例如：
 
     ```c
     if_stmt : TIF expr block 
@@ -259,11 +260,11 @@ int testExtern(){
         llvm::Value *codeGen(CodeGenContext &context) override ;
     };
     ```
-    
-    在该例子中，我们定义了一个if语句，针对每个语法后都注明了相应的语义动作，这个动作将在此条语法被规约（reduce）的时候被执行。
-    这个过程将会递归地从叶符号到根结点符号的次序执行。在这个过程中，每个非终结符最终会被合并为一棵大的语法树。
     
-    例如，遇到 `TIF expr block TELSE block` 类型的语法时，说明解析到一个标准的if-else语法，这时候便调用NIfStatement类的构造函数，同时将所需要的条件表达式（$2)以及true和false所要执行的两个block作为函数参数传递进去，生成一个NIfStatement结点的对象后返回给上一层级。
+    在该例子中，我们定义了一个if语句，针对每个语法后都注明了相应的语义动作，这个动作将在此条语法被规约（reduce）的时候被执行。
+    这个过程将会递归地从叶符号到根结点符号的次序执行。在这个过程中，每个非终结符最终会被合并为一棵大的语法树。
+    
+    例如，遇到 `TIF expr block TELSE block` 类型的语法时，说明解析到一个标准的if-else语法，这时候便调用NIfStatement类的构造函数，同时将所需要的条件表达式（$2)以及true和false所要执行的两个block作为函数参数传递进去，生成一个NIfStatement结点的对象后返回给上一层级。
     
 ----
 
@@ -312,7 +313,7 @@ int testExtern(){
 - 类型系统实现
 
     在有了能够表达类型的数据结构后，我们便能够通过类型名（name）以及isArray字段判断在一个变量声明语法（NVaraibleDeclaration类）中，变量所使用的类型了。但为了实现判断两种类型之间是否存在可转换的关系，以及以上类型检查所需要的其他操作，我们定义并实现了一个TypeSystem类专门用于存储类型相关、上下文无关的信息，包括各种隐式类型转换关系，是否为结构体，以及结构体各个成员类型等。
-    
+    
     TypeSystem类定义：
     ```c++
 
@@ -363,7 +364,7 @@ int testExtern(){
     
     由于TinyCompiler的后端是基于LLVM实现的，为了便于生成LLVM中间代码，需要将所有前端语言的类型转化为LLVM IR语言支持的类型，如上述定义中所示：float，double，void类型分别转成LLVM内的float，double，void类型，int用32位整数类型表示，char用8位整数类型，bool用1位整数类型，而string则是用8位整数指针类型即相当于char指针类型来表示。
 
-    在TypeSystem中，我们使用key-value结构的表castTable存储每个类型之间的类型转换指令，其中key为源类型和目标类型，value则是相应的LLVM IR类型转换指令。我们实现了一个内部调用的接口addCast，以便在TypeSystem的构造函数中调用来设定哪些类型存在隐式转换，并将其添加到castTable中。
+    在TypeSystem中，我们使用key-value结构的表castTable存储每个类型之间的类型转换指令，其中key为源类型和目标类型，value则是相应的LLVM IR类型转换指令。我们实现了一个内部调用的接口addCast，以便在TypeSystem的构造函数中调用来设定哪些类型存在隐式转换，并将其添加到castTable中。
 
     ```c++
     TypeSystem::TypeSystem(LLVMContext &context): llvmContext(context){
@@ -379,7 +380,7 @@ int testExtern(){
 
     如上所示，默认支持的隐式转换包括int->float，int->double，bool->double，float->double，float->int，double->int，bool->int。
 
-    此外，TypeSystem另一个重要的接口即cast函数，用于提供某个表达式的值向另一类型的转换指令。若两种类型不存在转换关系时，则输出错误信息并返回源类型的值。
+    此外，TypeSystem另一个重要的接口即cast函数，用于提供某个表达式的值向另一类型的转换指令。若两种类型不存在转换关系时，则输出错误信息并返回源类型的值。
 
     ```c++
     Value* TypeSystem::cast(Value *value, Type *type, BasicBlock *block) {
@@ -403,9 +404,9 @@ int testExtern(){
 
 - 变量类型检查
 
-    TypeSystem维护的只是整个语言的类型信息，但类型检查还需要知道每一条语句中涉及的变量具体类型及在该语句中的使用是否合法，因此我们需要维护额外的数据来进行这一工作。在c语言中变量的作用域是以大括号划分的，每组大括号内部作为一个block能够访问其内部定义的局部变量，也能访问包含其block的外部block中定义的变量。
+    TypeSystem维护的只是整个语言的类型信息，但类型检查还需要知道每一条语句中涉及的变量具体类型及在该语句中的使用是否合法，因此我们需要维护额外的数据来进行这一工作。在c语言中变量的作用域是以大括号划分的，每组大括号内部作为一个block能够访问其内部定义的局部变量，也能访问包含其block的外部block中定义的变量。
 
-    为了实现这一功能，我们定义了一个用于表示每个block的类CodeGenBlock，内部维护的信息包括这一层block的局部变量，局部变量的类型，以及该变量是否为函数参数（主要是因为对于函数参数传递过来的数组要当做指针处理）等，如下所示。
+    为了实现这一功能，我们定义了一个用于表示每个block的类CodeGenBlock，内部维护的信息包括这一层block的局部变量，局部变量的类型，以及该变量是否为函数参数（主要是因为对于函数参数传递过来的数组要当做指针处理）等，如下所示。
     ```c++
     class CodeGenBlock{
     public:
@@ -417,7 +418,7 @@ int testExtern(){
     };
     ```
 
-    此外，还需要在整个编译器程序中使用一个单例的CodeGenContext对象维护全局的编译信息。在这个对象中主要维护的成员包括处理CodeGenBlock时所用到的栈blockStack，全局变量表globalVars以及类型系统单例typeSystem，以及之后生成中间代码时需要用到的LLVM提供的相关对象。
+    此外，还需要在整个编译器程序中使用一个单例的CodeGenContext对象维护全局的编译信息。在这个对象中主要维护的成员包括处理CodeGenBlock时所用到的栈blockStack，全局变量表globalVars以及类型系统单例typeSystem，以及之后生成中间代码时需要用到的LLVM提供的相关对象。
 
     ```c++
     class CodeGenContext{
@@ -435,9 +436,9 @@ int testExtern(){
     }
     ```
 
-    这样一来在进行类型检查时，我们便可以通过让CodeGenContext从栈顶开始遍历每个block的types表来查询某个变量的具体类型。这样也能够保证在变量名有冲突的情况下，能够正确的返回最近的block中定义的变量，符合c语言的编译处理规则。
+    这样一来在进行类型检查时，我们便可以通过让CodeGenContext从栈顶开始遍历每个block的types表来查询某个变量的具体类型。这样也能够保证在变量名有冲突的情况下，能够正确的返回最近的block中定义的变量，符合c语言的编译处理规则。
 
-    类型检查示例（数组元素表达式）
+    类型检查示例（数组元素表达式）
     ```c++   
     llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
         cout << "Generating array index expression of " << this->arrayName->name << endl;
@@ -454,7 +455,7 @@ int testExtern(){
 
 - 实现方式
 
-    编译器的下一步自然就是将抽象语法树转化生成某种类型的中间代码。在LLVM提供的接口下实现中间代码的生成比较优雅，因为LLVM将真实的指令抽象成了类似AST的指令，因此我们能够很方便的将AST的树形结构生成线性的中间代码。
+    编译器的下一步自然就是将抽象语法树转化生成某种类型的中间代码。在LLVM提供的接口下实现中间代码的生成比较优雅，因为LLVM将真实的指令抽象成了类似AST的指令，因此我们能够很方便的将AST的树形结构生成线性的中间代码。
 
     可以想象这个过程是从抽象语法树的根节点开始遍历每一个树上节点并产生中间代码的过程。这一工作就是通过在各个AST节点类中实现在Node中定义的codeGen方法来实现的。例如，当我们遍历NBlock代码的时候(语义上NBlock代表一组我们语言的语句的集合)，我们将调用列表中每条语句的codeGen方法。每种AST节点的Codegen()方法负责生成该类型AST节点的IR代码及其他必要信息，生成的内容以LLVM Value对象指针的形式返回。LLVM用“Value”类表示“静态一次性赋值（SSA，Static Single Assignment）寄存器”或“SSA值”。SSA值最为突出的特点就在于“固定不变”：SSA值经由对应指令运算得出后便固定下来，直到该指令再次执行之前都不可修改。详情请参考[Static Single Assignment](http://en.wikipedia.org/wiki/Static_single_assignment_form)
     
@@ -462,7 +463,7 @@ int testExtern(){
 
 - 实现细节
 
-    由于各个结点实现codeGen方法的方式大同小异，因此这里只用几个具有代表性的实现来解释生成方法。
+    由于各个结点实现codeGen方法的方式大同小异，因此这里只用几个具有代表性的实现来解释生成方法。
 
 
     生成NBlock的过程如下所示：
@@ -500,7 +501,7 @@ int testExtern(){
         return context.builder.CreateLoad(value, false, "");
     }
     ```
-    标识符表达式主要用于引用有变量名的表达式中，其语义即为取出变量对应的值。对于普通变量则是直接从当前block的符号表中通过`getSymbolValue`先取出其存储地址，然后通过`CreateLoad`创建一条Load指令将变量值取出来并返回寄存器的地址给调用者
+    标识符表达式主要用于引用有变量名的表达式中，其语义即为取出变量对应的值。对于普通变量则是直接从当前block的符号表中通过`getSymbolValue`先取出其存储地址，然后通过`CreateLoad`创建一条Load指令将变量值取出来并返回寄存器的地址给调用者
 
 - [LLVM中间代码语法](http://llvm.org/docs/LangRef.html) 格式样例
 
@@ -555,7 +556,7 @@ int testExtern(){
 ------
 ## 目标代码生成
 
-- 实现方式
+- 实现方式
 
     LLVM中的平台无关代码生成器（Code Generator），同时也是一个编译器开发 框架（Framework）。它提供了一些可复用的组件，帮助用户将LLVM IR编译到特定的平台上。
 
@@ -588,7 +589,7 @@ int testExtern(){
     context.theModule->setTargetTriple(targetTriple);
     ```
     
-    3. 获取并设置TargetMachine信息
+    3. 获取并设置TargetMachine信息
     ```C++
     auto CPU = "generic";
     auto features = "";
@@ -765,7 +766,7 @@ forcont:                                          ; preds = %forloop, %entry
 ```
 
 运行结果
-![img]()
+![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testBasic.png)
 
 2. 结构体使用
 ```c
@@ -779,7 +780,7 @@ int func(struct Point p){
 int test(){
     struct Point p
     p.x = 1
-    p.y = 3
+    p.y = 3
     func(p)
     return 0
 }
@@ -827,7 +828,7 @@ entry:
 ```
 
 运行结果
-![img]()
+![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testStruct.png)
 
 3. 数组使用
 ```c
@@ -965,4 +966,4 @@ forcont38:                                        ; preds = %forloop29, %forcont
 ```
 
 运行结果
-![img]()
+![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testArray.png)
