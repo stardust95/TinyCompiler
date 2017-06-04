@@ -65,16 +65,17 @@ void CodeGenContext::generateCode(NBlock& root) {
 llvm::Value* NAssignment::codeGen(CodeGenContext &context) {
     cout << "Generating assignment of " << this->lhs->name << " = " << endl;
     Value* dst = context.getSymbolValue(this->lhs->name);
-    string dstType = context.getSymbolType(this->lhs->name);
+    auto dstType = context.getSymbolType(this->lhs->name);
+    string dstTypeStr = dstType->name;
     if( !dst ){
         return LogErrorV("Undeclared variable");
     }
     Value* exp = exp = this->rhs->codeGen(context);
 
-    cout << "dst typeid = " << TypeSystem::llvmTypeToStr(context.typeSystem.getVarType(dstType)) << endl;
+    cout << "dst typeid = " << TypeSystem::llvmTypeToStr(context.typeSystem.getVarType(dstTypeStr)) << endl;
     cout << "exp typeid = " << TypeSystem::llvmTypeToStr(exp) << endl;
 
-    exp = context.typeSystem.cast(exp, context.typeSystem.getVarType(dstType), context.currentBlock());
+    exp = context.typeSystem.cast(exp, context.typeSystem.getVarType(dstTypeStr), context.currentBlock());
     context.builder.CreateStore(exp, dst);
     return dst;
 }
@@ -225,7 +226,7 @@ llvm::Value* NFunctionDeclaration::codeGen(CodeGenContext &context) {
 
             context.builder.CreateStore(&ir_arg_it, argAlloc, false);
             context.setSymbolValue((*origin_arg)->id->name, argAlloc);
-            context.setSymbolType((*origin_arg)->id->name, (*origin_arg)->type->name);
+            context.setSymbolType((*origin_arg)->id->name, (*origin_arg)->type);
             context.setFuncArg((*origin_arg)->id->name, true);
             origin_arg++;
         }
@@ -299,7 +300,7 @@ llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
         inst = context.builder.CreateAlloca(type);
     }
 
-    context.setSymbolType(this->id->name, this->type->name);
+    context.setSymbolType(this->id->name, this->type);
     context.setSymbolValue(this->id->name, inst);
 
     context.PrintSymTable();
@@ -466,17 +467,21 @@ llvm::Value* NStructAssignment::codeGen(CodeGenContext &context) {
 llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
     cout << "Generating array index expression of " << this->arrayName->name << endl;
     auto varPtr = context.getSymbolValue(this->arrayName->name);
-    string typeStr = context.getSymbolType(this->arrayName->name);
+    auto type = context.getSymbolType(this->arrayName->name);
+    string typeStr = type->name;
 
-    if( !varPtr->getType()->isArrayTy() && !varPtr->getType()->isPointerTy() ){
-    }
+    assert(type->isArray);
+//    if( !varPtr->getType()->isArrayTy() && !varPtr->getType()->isPointerTy() ){
+//    }
 //    std::vector<Value*> indices;
     auto value = this->expression->codeGen(context);
     ArrayRef<Value*> indices;
     if(context.isFuncArg(this->arrayName->name) ){
+        cout << "isFuncArg" << endl;
         varPtr = context.builder.CreateLoad(varPtr, "actualArrayPtr");
         indices = { value };
     }else if( varPtr->getType()->isPointerTy() ){
+        cout << this->arrayName->name << "Not isFuncArg" << endl;
         indices = { ConstantInt::get(Type::getInt64Ty(context.llvmContext), 0), value };
     }else{
         return LogErrorV("The variable is not array");

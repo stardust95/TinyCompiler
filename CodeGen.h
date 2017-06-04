@@ -27,7 +27,7 @@ public:
     BasicBlock * block;
     Value * returnValue;
     std::map<string, Value*> locals;
-    std::map<string, string> types;     // type name string of vars
+    std::map<string, shared_ptr<NIdentifier>> types;     // type name string of vars
     std::map<string, bool> isFuncArg;
 };
 
@@ -56,17 +56,21 @@ public:
         return nullptr;
     }
 
-    string getSymbolType(string name) const{
+    shared_ptr<NIdentifier> getSymbolType(string name) const{
         for(auto it=blockStack.rbegin(); it!=blockStack.rend(); it++){
 //            cout << "(*it)->locals[" << name << "] = " << (*it)->locals[name] << endl;
             if( (*it)->types.find(name) != (*it)->types.end() ){
                 return (*it)->types[name];
             }
         }
-        return "";
+        return nullptr;
     }
 
     bool isFuncArg(string name) const{
+//        auto theMap = blockStack.back()->isFuncArg;
+//        for(auto it = theMap.begin(); it!=theMap.end(); it++){
+//            cout << it->first << ": " << it->second << endl;
+//        }
         return blockStack.back()->isFuncArg[name];
     }
 
@@ -74,12 +78,17 @@ public:
         blockStack.back()->locals[name] = value;
     }
 
-    void setSymbolType(string name, string value){
+    void setSymbolType(string name, shared_ptr<NIdentifier> value){
         blockStack.back()->types[name] = value;
     }
 
     void setFuncArg(string name, bool value){
+        cout << "Set " << name << " as func arg" << endl;
         blockStack.back()->isFuncArg[name] = value;
+//        auto theMap = blockStack.back()->isFuncArg;
+//        for(auto it = theMap.begin(); it!=theMap.end(); it++){
+//            cout << it->first << ": " << it->second << endl;
+//        }
     }
 
     BasicBlock* currentBlock() const{
