@@ -657,7 +657,6 @@ int main(int argc, string[1] argv){
 抽象语法树
 ```
 
-```
 --NBlock:
 ----NFunctionDeclaration:
 ------NIdentifier:int
@@ -768,7 +767,6 @@ int main(int argc, string[1] argv){
 ----------------NIdentifier:puts
 ----------------NLiteral:
 --------NReturnStatement
-```
 ```
 
 
