@@ -12,7 +12,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 
 #include "CodeGen.h"
 #include "ObjGen.h"

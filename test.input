@@ -6,12 +6,6 @@ struct Point{
 extern int printf(string str)
 extern int puts(string str)
 
-int do_math(int[3][4] arr, int i) {
-#    printf("%p|%d,%d,%d|", arr, arr[0], arr[1],arr[2])
-    return 0
-}
-
-
 int test(){
     struct Point p
     p.x = 1

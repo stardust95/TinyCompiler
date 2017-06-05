@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include "codegen.h"
+#include "CodeGen.h"
 #include "ASTNodes.h"
 
 using namespace std;
