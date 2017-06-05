@@ -9,7 +9,7 @@ OBJS = grammar.o \
 		TypeSystem.o \
 
 LLVMCONFIG = llvm-config-3.9
-CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11 -Wdeprecated-register
+CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11
 LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
 LIBS = `$(LLVMCONFIG) --libs`
 
