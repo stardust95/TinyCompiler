@@ -1,0 +1,258 @@
+{
+	"children" : 
+	[
+		{
+			"children" : 
+			[
+				{
+					"children" : 
+					[
+						{
+							"name" : "NIdentifier:int"
+						},
+						{
+							"name" : "NIdentifier:x"
+						}
+					],
+					"name" : "NVariableDeclaration"
+				},
+				{
+					"children" : 
+					[
+						{
+							"name" : "NIdentifier:int"
+						},
+						{
+							"name" : "NIdentifier:y"
+						}
+					],
+					"name" : "NVariableDeclaration"
+				}
+			],
+			"name" : "NStructDeclaration:Point"
+		},
+		{
+			"children" : 
+			[
+				{
+					"name" : "NIdentifier:int"
+				},
+				{
+					"name" : "NIdentifier:printf"
+				},
+				{
+					"children" : 
+					[
+						{
+							"name" : "NIdentifier:string"
+						},
+						{
+							"name" : "NIdentifier:str"
+						}
+					],
+					"name" : "NVariableDeclaration"
+				}
+			],
+			"name" : "NFunctionDeclaration"
+		},
+		{
+			"children" : 
+			[
+				{
+					"name" : "NIdentifier:int"
+				},
+				{
+					"name" : "NIdentifier:puts"
+				},
+				{
+					"children" : 
+					[
+						{
+							"name" : "NIdentifier:string"
+						},
+						{
+							"name" : "NIdentifier:str"
+						}
+					],
+					"name" : "NVariableDeclaration"
+				}
+			],
+			"name" : "NFunctionDeclaration"
+		},
+		{
+			"children" : 
+			[
+				{
+					"name" : "NIdentifier:int"
+				},
+				{
+					"name" : "NIdentifier:main"
+				},
+				{
+					"children" : 
+					[
+						{
+							"children" : 
+							[
+								{
+									"name" : "NIdentifier:Point"
+								},
+								{
+									"name" : "NIdentifier:p"
+								}
+							],
+							"name" : "NVariableDeclaration"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"children" : 
+											[
+												{
+													"name" : "NIdentifier:p"
+												},
+												{
+													"name" : "NIdentifier:x"
+												}
+											],
+											"name" : "NStructMember"
+										},
+										{
+											"name" : "NInteger:1"
+										}
+									],
+									"name" : "NStructAssignment"
+								}
+							],
+							"name" : "NExpressionStatement"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:int(Array)"
+										},
+										{
+											"name" : "NIdentifier:arr"
+										}
+									],
+									"name" : "NVariableDeclaration"
+								},
+								{
+									"name" : "NInteger:1"
+								},
+								{
+									"name" : "NInteger:2"
+								},
+								{
+									"name" : "NInteger:3"
+								},
+								{
+									"name" : "NInteger:4"
+								},
+								{
+									"name" : "NInteger:5"
+								},
+								{
+									"name" : "NInteger:6"
+								},
+								{
+									"name" : "NInteger:7"
+								},
+								{
+									"name" : "NInteger:8"
+								},
+								{
+									"name" : "NInteger:9"
+								},
+								{
+									"name" : "NInteger:10"
+								},
+								{
+									"name" : "NInteger:11"
+								},
+								{
+									"name" : "NInteger:12"
+								}
+							],
+							"name" : "NArrayInitialization"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:printf"
+										},
+										{
+											"name" : "NLiteral:|%d|"
+										},
+										{
+											"children" : 
+											[
+												{
+													"name" : "NIdentifier:p"
+												},
+												{
+													"name" : "NIdentifier:x"
+												}
+											],
+											"name" : "NStructMember"
+										}
+									],
+									"name" : "NMethodCall"
+								}
+							],
+							"name" : "NExpressionStatement"
+						},
+						{
+							"children" : 
+							[
+								{
+									"name" : "NIdentifier:int"
+								},
+								{
+									"name" : "NIdentifier:i"
+								}
+							],
+							"name" : "NVariableDeclaration"
+						},
+						{
+							"children" : 
+							[
+								{
+									"name" : "NIdentifier:int"
+								},
+								{
+									"name" : "NIdentifier:j"
+								}
+							],
+							"name" : "NVariableDeclaration"
+						},
+						{
+							"children" : 
+							[
+								{
+									"name" : "NInteger:0"
+								}
+							],
+							"name" : "NReturnStatement"
+						}
+					],
+					"name" : "NBlock"
+				}
+			],
+			"name" : "NFunctionDeclaration"
+		}
+	],
+	"name" : "NBlock"
+}

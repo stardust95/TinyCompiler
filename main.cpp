@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "ASTNodes.h"
 #include "CodeGen.h"
 #include "ObjGen.h"
@@ -15,7 +16,16 @@ int main(int argc, char **argv) {
 
     // std::cout << programBlock << std::endl;
     programBlock->print("--");
+    auto root = programBlock->jsonGen();
 
+    std::ofstream astJson("visualization/A_tree.json");
+    if( astJson.is_open() ){
+        astJson << root;
+        astJson.close();
+    }
+//    cout << root;
+
+//    cout << root << endl;
     CodeGenContext context;
 //    createCoreFunctions(context);
     context.generateCode(*programBlock);

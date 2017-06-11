@@ -2,11 +2,14 @@
 #ifndef __ASTNODES_H__
 #define __ASTNODES_H__
 
+#include <llvm/IR/Value.h>
+#include <json/json.h>
 #include <iostream>
 #include <vector>
-#include <llvm/IR/Value.h>
+
 #include <memory>
 #include <string>
+
 //puts("$1"); return $1;
 using std::cout;
 using std::endl;
@@ -34,6 +37,7 @@ public:
 	virtual string getTypeName() const = 0;
 	virtual void print(string prefix) const{}
 	virtual llvm::Value *codeGen(CodeGenContext &context) { return (llvm::Value *)0; }
+	virtual Json::Value jsonGen() const { return Json::Value(); }
 };
 
 class NExpression : public Node {
@@ -48,6 +52,12 @@ public:
         cout << prefix << getTypeName() << endl;
     }
 
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        return root;
+    }
+
 };
 
 class NStatement : public Node {
@@ -59,6 +69,12 @@ public:
 	}
     virtual void print(string prefix) const override{
         cout << prefix << getTypeName() << endl;
+    }
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        return root;
     }
 };
 
@@ -81,6 +97,12 @@ public:
 		cout << prefix << getTypeName() << this->m_DELIM << value << endl;
 	}
 
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName() + this->m_DELIM + std::to_string(value);
+        return root;
+    }
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -101,6 +123,12 @@ public:
 
     void print(string prefix) const override{
         cout << prefix << getTypeName() << this->m_DELIM << value << endl;
+    }
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName() + this->m_DELIM + std::to_string(value);
+        return root;
     }
 
     operator NDouble(){
@@ -128,6 +156,12 @@ public:
 	string getTypeName() const override {
 		return "NIdentifier";
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName() + this->m_DELIM + name + (isArray ? "(Array)" : "");
+        return root;
+    }
 
 	void print(string prefix) const override{
         string nextPrefix = prefix+this->m_PREFIX;
@@ -162,6 +196,16 @@ public:
 		return "NMethodCall";
 	}
 
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(this->id->jsonGen());
+        for(auto it=arguments->begin(); it!=arguments->end(); it++){
+            root["children"].append((*it)->jsonGen());
+        }
+        return root;
+    }
+
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
@@ -189,6 +233,16 @@ public:
 	string getTypeName() const override {
 		return "NBinaryOperator";
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName() + this->m_DELIM + std::to_string(op);
+
+        root["children"].append(lhs->jsonGen());
+        root["children"].append(rhs->jsonGen());
+
+        return root;
+    }
 
 	void print(string prefix) const override{
 		string nextPrefix = prefix+this->m_PREFIX;
@@ -222,6 +276,15 @@ public:
 		lhs->print(nextPrefix);
 		rhs->print(nextPrefix);
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(lhs->jsonGen());
+        root["children"].append(rhs->jsonGen());
+        return root;
+    }
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -244,6 +307,16 @@ public:
 			(*it)->print(nextPrefix);
 		}
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        for(auto it=statements->begin(); it!=statements->end(); it++){
+            root["children"].append((*it)->jsonGen());
+        }
+        return root;
+    }
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -266,6 +339,14 @@ public:
 		cout << prefix << getTypeName() << this->m_DELIM << endl;
 		expression->print(nextPrefix);
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(expression->jsonGen());
+        return root;
+    }
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -302,6 +383,18 @@ public:
             assignmentExpr->print(nextPrefix);
         }
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(type->jsonGen());
+        root["children"].append(id->jsonGen());
+        if( assignmentExpr != nullptr ){
+            root["children"].append(assignmentExpr->jsonGen());
+        }
+        return root;
+    }
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -339,6 +432,25 @@ public:
         if( block )
 		    block->print(nextPrefix);
 	}
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(type->jsonGen());
+        root["children"].append(id->jsonGen());
+
+        for(auto it=arguments->begin(); it!=arguments->end(); it++){
+            root["children"].append((*it)->jsonGen());
+        }
+
+        assert(isExternal || block != nullptr);
+        if( block ){
+            root["children"].append(block->jsonGen());
+        }
+
+        return root;
+    }
+
 	virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -367,6 +479,18 @@ public:
         }
     }
 
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName() + this->m_DELIM + this->name->name;
+
+        for(auto it=members->begin(); it!=members->end(); it++){
+            root["children"].append((*it)->jsonGen());
+        }
+
+        return root;
+    }
+
     virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 };
 
@@ -381,11 +505,23 @@ public:
 
     }
 
-
     string getTypeName() const override {
         return "NReturnStatement";
     }
 
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(expression->jsonGen());
+        return root;
+    }
+
+    void print(string prefix) const override {
+        string nextPrefix = prefix + this->m_PREFIX;
+        cout << prefix << getTypeName() << this->m_DELIM << endl;
+
+        expression->print(nextPrefix);
+    }
 
     virtual llvm::Value* codeGen(CodeGenContext& context) override ;
 
@@ -406,7 +542,6 @@ public:
 
     }
 
-
     string getTypeName() const override {
         return "NIfStatement";
     }
@@ -423,6 +558,17 @@ public:
             falseBlock->print(nextPrefix);
         }
 
+    }
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+        root["children"].append(condition->jsonGen());
+        root["children"].append(trueBlock->jsonGen());
+        if( falseBlock ){
+            root["children"].append(falseBlock->jsonGen());
+        }
+        return root;
     }
 
 
@@ -464,6 +610,21 @@ public:
         block->print(nextPrefix);
     }
 
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+
+        if( initial )
+            root["children"].append(initial->jsonGen());
+        if( condition )
+            root["children"].append(condition->jsonGen());
+        if( increment )
+            root["children"].append(increment->jsonGen());
+
+        return root;
+    }
+
     llvm::Value *codeGen(CodeGenContext &context) override ;
 
 };
@@ -490,6 +651,17 @@ public:
 
         id->print(nextPrefix);
         member->print(nextPrefix);
+    }
+
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+
+        root["children"].append(id->jsonGen());
+        root["children"].append(member->jsonGen());
+
+        return root;
     }
 
     llvm::Value *codeGen(CodeGenContext &context) override ;
@@ -521,6 +693,17 @@ public:
         expression->print(nextPrefix);
     }
 
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+
+        root["children"].append(arrayName->jsonGen());
+        root["children"].append(expression->jsonGen());
+
+        return root;
+    }
+
     llvm::Value *codeGen(CodeGenContext &context) override ;
 
 };
@@ -548,6 +731,17 @@ public:
 
         arrayIndex->print(nextPrefix);
         expression->print(nextPrefix);
+    }
+
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+
+        root["children"].append(arrayIndex->jsonGen());
+        root["children"].append(expression->jsonGen());
+
+        return root;
     }
 
 
@@ -584,6 +778,18 @@ public:
     }
 
 
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+
+        root["children"].append(declaration->jsonGen());
+        for(auto it=expressionList->begin(); it!=expressionList->end(); it++)
+            root["children"].append((*it)->jsonGen());
+
+        return root;
+    }
+
+
     llvm::Value *codeGen(CodeGenContext &context) override ;
 
 };
@@ -613,6 +819,17 @@ public:
         expression->print(nextPrefix);
     }
 
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName();
+
+        root["children"].append(structMember->jsonGen());
+        root["children"].append(expression->jsonGen());
+
+        return root;
+    }
+
     llvm::Value *codeGen(CodeGenContext &context) override;
 
 };
@@ -635,6 +852,14 @@ public:
 
         cout << prefix << getTypeName() << this->m_DELIM << value << endl;
 
+    }
+
+
+    Json::Value jsonGen() const override {
+        Json::Value root;
+        root["name"] = getTypeName() + this->m_DELIM + value;
+
+        return root;
     }
 
     llvm::Value *codeGen(CodeGenContext &context) override;
