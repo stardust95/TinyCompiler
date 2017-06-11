@@ -8,7 +8,7 @@
 					"children" : 
 					[
 						{
-							"name" : "NIdentifier:int"
+							"name" : "NIdentifier:int(Array)"
 						},
 						{
 							"name" : "NIdentifier:x"

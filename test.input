@@ -15,10 +15,11 @@ int main(){
     
     int i
     int j
-    
+
     for(i=0; i<3; i=i+1){
         for(j=0; j<4; j=j+1){
-            arr2[i][j] = i+j 
+            printf("%d,", i*4+j)
+            arr2[i][j] = i*4+j
         }
     }
 
@@ -26,8 +27,8 @@ int main(){
         for(j=0; j<4; j=j+1){
             printf("%d,", arr2[i][j])
         }
+        puts("")
     }
-
     
     
     return 0

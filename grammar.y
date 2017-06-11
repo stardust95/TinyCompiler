@@ -38,7 +38,8 @@
 %type <token> comparison
 
 %left TPLUS TMINUS
-%left TMUL TDIV
+%left TMUL TDIV TMOD
+
 %start program
 
 %%
@@ -114,6 +115,11 @@ expr : 	assign { $$ = $1; }
 		 | ident TDOT ident { $$ = new NStructMember(shared_ptr<NIdentifier>($1), shared_ptr<NIdentifier>($3)); }
 		 | numeric
 		 | expr comparison expr { $$ = new NBinaryOperator(shared_ptr<NExpression>($1), $2, shared_ptr<NExpression>($3)); }
+		 | expr TMOD expr { $$ = new NBinaryOperator(shared_ptr<NExpression>($1), $2, shared_ptr<NExpression>($3)); }
+		 | expr TMUL expr { $$ = new NBinaryOperator(shared_ptr<NExpression>($1), $2, shared_ptr<NExpression>($3)); }
+		 | expr TDIV expr { $$ = new NBinaryOperator(shared_ptr<NExpression>($1), $2, shared_ptr<NExpression>($3)); }
+		 | expr TPLUS expr { $$ = new NBinaryOperator(shared_ptr<NExpression>($1), $2, shared_ptr<NExpression>($3)); }
+		 | expr TMINUS expr { $$ = new NBinaryOperator(shared_ptr<NExpression>($1), $2, shared_ptr<NExpression>($3)); }
 		 | TLPAREN expr TRPAREN { $$ = $2; }
 		 | TMINUS expr { $$ = nullptr; /* TODO */ }
 		 | array_index { $$ = $1; }
@@ -141,7 +147,7 @@ call_args : /* blank */ { $$ = new ExpressionList(); }
 					| expr { $$ = new ExpressionList(); $$->push_back(shared_ptr<NExpression>($1)); }
 					| call_args TCOMMA expr { $1->push_back(shared_ptr<NExpression>($3)); }
 comparison : TCEQ | TCNE | TCLT | TCLE | TCGT | TCGE
-					 | TPLUS | TMINUS | TMUL | TDIV | TAND | TMOD | TOR | TXOR | TSHIFTL | TSHIFTR
+				 | TAND | TOR | TXOR | TSHIFTL | TSHIFTR
 					 ;
 if_stmt : TIF expr block { $$ = new NIfStatement(shared_ptr<NExpression>($2), shared_ptr<NBlock>($3)); }
 		| TIF expr block TELSE block { $$ = new NIfStatement(shared_ptr<NExpression>($2), shared_ptr<NBlock>($3), shared_ptr<NBlock>($5)); }
