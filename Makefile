@@ -14,7 +14,7 @@ LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic -ljso
 LIBS = `$(LLVMCONFIG) --libs`
 
 clean:
-	$(RM) -rf grammar.cpp grammar.hpp compiler tokens.cpp *.output $(OBJS)
+	$(RM) -rf grammar.cpp grammar.hpp test compiler tokens.cpp *.output $(OBJS)
 
 ObjGen.cpp: ObjGen.h
 
