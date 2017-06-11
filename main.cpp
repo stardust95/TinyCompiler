@@ -18,11 +18,6 @@ int main(int argc, char **argv) {
     programBlock->print("--");
     auto root = programBlock->jsonGen();
 
-    std::ofstream astJson("visualization/A_tree.json");
-    if( astJson.is_open() ){
-        astJson << root;
-        astJson.close();
-    }
 //    cout << root;
 
 //    cout << root << endl;
@@ -30,6 +25,14 @@ int main(int argc, char **argv) {
 //    createCoreFunctions(context);
     context.generateCode(*programBlock);
     ObjGen(context);
+    
+    string jsonFile = "visualization/A_tree.json";
+    std::ofstream astJson(jsonFile);
+    if( astJson.is_open() ){
+        astJson << root;
+        astJson.close();
+        cout << "json write to " << jsonFile << endl;
+    }
 
     return 0;
 }
