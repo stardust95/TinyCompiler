@@ -19,7 +19,7 @@
     - 数组（包括多维数组）
     
     支持的主要语法包括：
-    - 变量的声明、初始化（多维数组暂不支持）
+    - 变量的声明、初始化（包括一维数组初始化，多维数组暂不支持初始化，只能逐个元素赋值使用）
     - 函数声明，函数调用（传递参数类型可以是任意已支持类型）
     - 外部函数声明和调用
     - 控制流语句if-else、for、while及任意层级的嵌套使用
@@ -35,7 +35,7 @@
 	- flex：flex（快速词法分析产生器，英语：fast lexical analyzer generator）是一种词法分析程序。它是lex的开放源代码版本，以BSD许可证发布。通常与GNU bison一同运作，但是它本身不是GNU计划的一部分。
 	- GNU bison：GNU bison是一个自由软件，用于自动生成语法分析器程序，实际上可用于所有常见的操作系统。Bison把LALR形式的上下文无关文法描述转换为可做语法分析的C或C++程序。在新近版本中，Bison增加了对GLR语法分析算法的支持。
 
-3. 源代码结构
+3. 主要源代码结构
 
     TinyCompiler\
     ├── ASTNodes.h 抽象语法树节点的定义\
@@ -52,9 +52,25 @@
     ├── test.input 用于测试词法、语法、语义分析的源代码\
     ├── testmain.cpp 用于测试链接目标文件的源代码\
     ├── token.l 词法分析lex文件\
-    └── utils.cpp tonging
+    ├── tests 测试用例及结果图\
+    │   ├── testArray.input\
+    │   ├── testArray.png\
+    │   ├── testArrayAST.png\
+    │   ├── testBasic.input\
+    │   ├── testBasic.png\
+    │   ├── testBasicAST.png\
+    │   ├── testStruct.input\
+    │   ├── testStruct.png\
+    │   └── testStructAST.png\
+    └── utils.cpp 通用函数实现
 
-4. 使用说明
+4. 运行环境
+
+    本项目已在 OSX Sierra 12.1（64位） 以及 Ubuntu LTS 14.04（64位）下，使用LLVM 3.9平台进行测试，测试截图见最后一节。
+
+    Windows平台可自行搭建LLVM环境后测试。
+
+5. 使用说明
 
     注： 本项目使用LLVM 3.9.0版本的接口，据测试不同版本可能无法直接编译
 
@@ -77,7 +93,7 @@
     make testlink
     ```
 
-5. 参考资料
+6. 参考资料
 
     [LLVM Language Reference Manual](http://llvm.org/docs/LangRef.html)
 
@@ -655,120 +671,8 @@ int main(int argc, string[1] argv){
 ```
 
 抽象语法树
-```
 
---NBlock:
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:printf
-------NVariableDeclaration:
---------NIdentifier:string
---------NIdentifier:format
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:puts
-------NVariableDeclaration:
---------NIdentifier:string
---------NIdentifier:s
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:func
-------NVariableDeclaration:
---------NIdentifier:int
---------NIdentifier:a
-------NVariableDeclaration:
---------NIdentifier:int
---------NIdentifier:b
-------NBlock:
---------NVariableDeclaration:
-----------NIdentifier:int
-----------NIdentifier:res
-----------NInteger:0
---------NIfStatement:
-----------NBinaryOperator:273
-------------NIdentifier:a
-------------NInteger:1
-----------NBlock:
-------------NExpressionStatement:
---------------NAssignment:
-----------------NIdentifier:res
-----------------NInteger:1
-----------NBlock:
-------------NIfStatement:
---------------NInteger:1
---------------NBlock:
-----------------NExpressionStatement:
-------------------NAssignment:
---------------------NIdentifier:res
---------------------NBinaryOperator:287
-----------------------NMethodCall:
-------------------------NIdentifier:func
-------------------------NBinaryOperator:288
---------------------------NIdentifier:a
---------------------------NInteger:1
-------------------------NIdentifier:b
-----------------------NMethodCall:
-------------------------NIdentifier:func
-------------------------NBinaryOperator:288
---------------------------NIdentifier:a
---------------------------NInteger:2
-------------------------NIdentifier:b
---------------NBlock:
-----------------NExpressionStatement:
-------------------NAssignment:
---------------------NIdentifier:res
---------------------NMethodCall:
-----------------------NIdentifier:func
-----------------------NIdentifier:b
-----------------------NIdentifier:a
---------NReturnStatement
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:main
-------NVariableDeclaration:
---------NIdentifier:int
---------NIdentifier:argc
-------NVariableDeclaration:
---------NIdentifier:string(Array)
-----------NInteger:1
---------NIdentifier:argv
-------NBlock:
---------NVariableDeclaration:
-----------NIdentifier:int
-----------NIdentifier:i
---------NExpressionStatement:
-----------NAssignment:
-------------NIdentifier:argc
-------------NInteger:5
---------NForStatement:
-----------NAssignment:
-------------NIdentifier:i
-------------NInteger:1
-----------NBinaryOperator:272
-------------NIdentifier:i
-------------NIdentifier:argc
-----------NAssignment:
-------------NIdentifier:i
-------------NBinaryOperator:287
---------------NIdentifier:i
---------------NInteger:1
-----------NBlock:
-------------NExpressionStatement:
---------------NMethodCall:
-----------------NIdentifier:printf
-----------------NLiteral:i=%d, func=%d
-----------------NIdentifier:i
-----------------NMethodCall:
-------------------NIdentifier:func
-------------------NIdentifier:i
-------------------NIdentifier:argc
-------------NExpressionStatement:
---------------NMethodCall:
-----------------NIdentifier:puts
-----------------NLiteral:
---------NReturnStatement
-```
-
+![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testBasicAST.png)
 
 中间代码
 ```
@@ -883,6 +787,7 @@ forcont:                                          ; preds = %forloop, %entry
 ```
 
 运行结果
+
 ![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testBasic.png)
 
 2. 结构体使用
@@ -903,107 +808,9 @@ int test(){
 }
 ```
 
-抽象语法树
-```
---NBlock:
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:printf
-------NVariableDeclaration:
---------NIdentifier:string
---------NIdentifier:format
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:puts
-------NVariableDeclaration:
---------NIdentifier:string
---------NIdentifier:s
-----NFunctionDeclaration:
-------NIdentifier:int
-------NIdentifier:main
-------NBlock:
---------NArrayInitialization:
-----------NVariableDeclaration:
-------------NIdentifier:int(Array)
---------------NInteger:10
-------------NIdentifier:oneDim
-----------NInteger:1
-----------NInteger:2
-----------NInteger:3
-----------NInteger:4
---------NVariableDeclaration:
-----------NIdentifier:int(Array)
-------------NInteger:12
-----------NIdentifier:twoDim
---------NVariableDeclaration:
-----------NIdentifier:int
-----------NIdentifier:i
---------NVariableDeclaration:
-----------NIdentifier:int
-----------NIdentifier:j
---------NForStatement:
-----------NAssignment:
-------------NIdentifier:i
-------------NInteger:0
-----------NBinaryOperator:272
-------------NIdentifier:i
-------------NInteger:3
-----------NAssignment:
-------------NIdentifier:i
-------------NBinaryOperator:287
---------------NIdentifier:i
---------------NInteger:1
-----------NBlock:
-------------NForStatement:
---------------NAssignment:
-----------------NIdentifier:j
-----------------NInteger:0
---------------NBinaryOperator:272
-----------------NIdentifier:j
-----------------NInteger:4
---------------NAssignment:
-----------------NIdentifier:j
-----------------NBinaryOperator:287
-------------------NIdentifier:j
-------------------NInteger:1
---------------NBlock:
-----------------NExpressionStatement:
-------------------NArrayAssignment:
---------------------NArrayIndex:
-----------------------NIdentifier:twoDim
-----------------------NBinaryOperator:289
-------------------------NIdentifier:i
-------------------------NIdentifier:j
---------------------NBinaryOperator:287
-----------------------NIdentifier:i
-----------------------NIdentifier:j
---------NForStatement:
-----------NAssignment:
-------------NIdentifier:i
-------------NInteger:0
-----------NBinaryOperator:272
-------------NIdentifier:i
-------------NInteger:10
-----------NAssignment:
-------------NIdentifier:i
-------------NBinaryOperator:287
---------------NIdentifier:i
---------------NInteger:1
-----------NBlock:
-------------NExpressionStatement:
---------------NMethodCall:
-----------------NIdentifier:printf
-----------------NLiteral:arr[%d] = %d
-----------------NIdentifier:i
-----------------NArrayIndex:
-------------------NIdentifier:oneDim
-------------------NIdentifier:i
-------------NExpressionStatement:
---------------NMethodCall:
-----------------NIdentifier:puts
-----------------NLiteral:
---------NReturnStatement
-```
+抽象语法树可视化
+
+![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testStructAST.png)
 
 中间代码
 ```
@@ -1047,6 +854,7 @@ entry:
 ```
 
 运行结果
+
 ![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testStruct.png)
 
 3. 数组使用
@@ -1074,12 +882,14 @@ int main(){
         }
         puts("")
     }
-    
-    
     return 0
 }
 
 ```
+
+抽象语法树可视化
+
+![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testArrayAST.png)
 
 中间代码
 ```
@@ -1243,4 +1053,5 @@ forcont67:                                        ; preds = %forcont61, %forcont
 ```
 
 运行结果
+
 ![img](https://raw.githubusercontent.com/375670450/TinyCompiler/master/tests/testArray.png)
