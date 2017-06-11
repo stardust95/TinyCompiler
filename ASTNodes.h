@@ -144,12 +144,12 @@ public:
     bool isType;
     bool isArray;
 
-    shared_ptr<NInteger> arraySize;
+    shared_ptr<ExpressionList> arraySize = make_shared<ExpressionList>();
 
     NIdentifier(){}
 
 	NIdentifier(const std::string &name)
-		: name(name), arraySize(nullptr) {
+		: name(name) {
 		// return "NIdentifier=" << name << endl;
 	}
 
@@ -160,15 +160,20 @@ public:
     Json::Value jsonGen() const override {
         Json::Value root;
         root["name"] = getTypeName() + this->m_DELIM + name + (isArray ? "(Array)" : "");
+        for(auto it=arraySize->begin(); it!=arraySize->end(); it++){
+            root["children"].append((*it)->jsonGen());
+        }
         return root;
     }
 
 	void print(string prefix) const override{
         string nextPrefix = prefix+this->m_PREFIX;
 		cout << prefix << getTypeName() << this->m_DELIM << name << (isArray ? "(Array)" : "") << endl;
-        if( isArray && arraySize != nullptr ){
+        if( isArray && arraySize->size() > 0 ){
 //            assert(arraySize != nullptr);
-            arraySize->print(nextPrefix);
+            for(auto it=arraySize->begin(); it!=arraySize->end(); it++){
+                (*it)->print(nextPrefix);
+            }
         }
 	}
 
@@ -355,12 +360,6 @@ public:
 	const shared_ptr<NIdentifier> type;
 	shared_ptr<NIdentifier> id;
 	shared_ptr<NExpression> assignmentExpr = nullptr;
-
-//	NVariableDeclaration(const shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id)
-//		: type(type), id(id), assignmentExpr(nullptr) {
-//        assert(type.isType);
-//        assert()
-//	}
 
     NVariableDeclaration(){}
 
@@ -671,36 +670,45 @@ public:
 class NArrayIndex: public NExpression{
 public:
     shared_ptr<NIdentifier>  arrayName;
-    shared_ptr<NExpression>  expression;
+//    shared_ptr<NExpression>  expression;
+    shared_ptr<ExpressionList> expressions = make_shared<ExpressionList>();
 
     NArrayIndex(){}
 
     NArrayIndex(shared_ptr<NIdentifier>  name, shared_ptr<NExpression>  exp)
-            : arrayName(name), expression(exp){
+            : arrayName(name){
+        expressions->push_back(exp);
+    }
 
+
+    NArrayIndex(shared_ptr<NIdentifier>  name, shared_ptr<ExpressionList> list)
+            : arrayName(name), expressions(list){
     }
 
     string getTypeName() const override{
         return "NArrayIndex";
     }
 
-
     void print(string prefix) const override{
         string nextPrefix = prefix + this->m_PREFIX;
         cout << prefix << getTypeName() << this->m_DELIM << endl;
 
         arrayName->print(nextPrefix);
-        expression->print(nextPrefix);
+        for(auto it=expressions->begin(); it!=expressions->end(); it++){
+            (*it)->print(nextPrefix);
+        }
+//        expression->print(nextPrefix);
     }
-
 
     Json::Value jsonGen() const override {
         Json::Value root;
         root["name"] = getTypeName();
 
         root["children"].append(arrayName->jsonGen());
-        root["children"].append(expression->jsonGen());
-
+//        root["children"].append(expression->jsonGen());
+        for(auto it=expressions->begin(); it!=expressions->end(); it++){
+            root["children"].append((*it)->jsonGen());
+        }
         return root;
     }
 

@@ -18,9 +18,9 @@ clean:
 
 ObjGen.cpp: ObjGen.h
 
-CodeGen.cpp: CodeGen.h
+CodeGen.cpp: CodeGen.h ASTNodes.h
 
-grammar.cpp: grammar.y ASTNodes.h
+grammar.cpp: grammar.y
 	bison -d -o $@ $<
 
 grammar.hpp: grammar.cpp

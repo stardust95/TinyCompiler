@@ -30,6 +30,7 @@ public:
     std::map<string, Value*> locals;
     std::map<string, shared_ptr<NIdentifier>> types;     // type name string of vars
     std::map<string, bool> isFuncArg;
+    std::map<string, std::vector<uint64_t>> arraySizes;
 };
 
 class CodeGenContext{
@@ -68,11 +69,13 @@ public:
     }
 
     bool isFuncArg(string name) const{
-//        auto theMap = blockStack.back()->isFuncArg;
-//        for(auto it = theMap.begin(); it!=theMap.end(); it++){
-//            cout << it->first << ": " << it->second << endl;
-//        }
-        return blockStack.back()->isFuncArg[name];
+
+        for(auto it=blockStack.rbegin(); it!=blockStack.rend(); it++){
+            if( (*it)->isFuncArg.find(name) != (*it)->isFuncArg.end() ){
+                return (*it)->isFuncArg[name];
+            }
+        }
+        return false;
     }
 
     void setSymbolValue(string name, Value* value){
@@ -86,10 +89,6 @@ public:
     void setFuncArg(string name, bool value){
         cout << "Set " << name << " as func arg" << endl;
         blockStack.back()->isFuncArg[name] = value;
-//        auto theMap = blockStack.back()->isFuncArg;
-//        for(auto it = theMap.begin(); it!=theMap.end(); it++){
-//            cout << it->first << ": " << it->second << endl;
-//        }
     }
 
     BasicBlock* currentBlock() const{
@@ -115,6 +114,21 @@ public:
 
     Value* getCurrentReturnValue(){
         return blockStack.back()->returnValue;
+    }
+
+    void setArraySize(string name, std::vector<uint64_t> value){
+        cout << "setArraySize: " << name << ": " << value.size() << endl;
+        blockStack.back()->arraySizes[name] = value;
+//        cout << "blockStack.back()->arraySizes.size()" << blockStack.back()->arraySizes.size() << endl;
+    }
+
+    std::vector<uint64_t> getArraySize(string name){
+        for(auto it=blockStack.rbegin(); it!=blockStack.rend(); it++){
+            if( (*it)->arraySizes.find(name) != (*it)->arraySizes.end() ){
+                return (*it)->arraySizes[name];
+            }
+        }
+        return blockStack.back()->arraySizes[name];
     }
 
     void PrintSymTable() const{

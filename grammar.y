@@ -69,11 +69,11 @@ primary_typename : TYINT { $$ = new NIdentifier(*$1); $$->isType = true;  delete
 
 array_typename : primary_typename TLBRACKET TINTEGER TRBRACKET { 
 					$1->isArray = true; 
-					$1->arraySize = make_shared<NInteger>(atol($3->c_str())); 
+					$1->arraySize->push_back(make_shared<NInteger>(atol($3->c_str()))); 
 					$$ = $1; 
 				}
 				| array_typename TLBRACKET TINTEGER TRBRACKET {
-					$1->arraySize->value *= atol($3->c_str());
+					$1->arraySize->push_back(make_shared<NInteger>(atol($3->c_str())));
 					$$ = $1;
 				}
 
@@ -120,8 +120,13 @@ expr : 	assign { $$ = $1; }
 		 | TLITERAL { $$ = new NLiteral(*$1); delete $1; }
 		 ;
 
-array_index : ident TLBRACKET expr TRBRACKET { $$ = new NArrayIndex(shared_ptr<NIdentifier>($1), shared_ptr<NExpression>($3)); }
-				| array_index TLBRACKET expr TRBRACKET { $1->expression = make_shared<NBinaryOperator>($1->expression, TMUL, shared_ptr<NExpression>($3)); $$ = $1; }
+array_index : ident TLBRACKET expr TRBRACKET 
+				{ $$ = new NArrayIndex(shared_ptr<NIdentifier>($1), shared_ptr<NExpression>($3)); }
+				| array_index TLBRACKET expr TRBRACKET 
+					{ 	
+						$1->expressions->push_back(shared_ptr<NExpression>($3));
+						$$ = $1;
+					}
 assign : ident TEQUAL expr { $$ = new NAssignment(shared_ptr<NIdentifier>($1), shared_ptr<NExpression>($3)); }
 			| array_index TEQUAL expr {
 				$$ = new NArrayAssignment(shared_ptr<NArrayIndex>($1), shared_ptr<NExpression>($3));

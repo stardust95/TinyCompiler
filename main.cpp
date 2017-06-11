@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 //    createCoreFunctions(context);
     context.generateCode(*programBlock);
     ObjGen(context);
-    
+
     string jsonFile = "visualization/A_tree.json";
     std::ofstream astJson(jsonFile);
     if( astJson.is_open() ){

@@ -20,7 +20,7 @@ using legacy::PassManager;
  * TODO:
  *       1. unary ops
  *       2. variable declaration list
- *       3. array type as function parameter
+ *
  *
  *
  */
@@ -30,7 +30,7 @@ static Type* TypeOf(const NIdentifier & type, CodeGenContext& context){        /
     return context.typeSystem.getVarType(type);
 }
 
-Value* CastToBoolean(CodeGenContext& context, Value* condValue){
+static Value* CastToBoolean(CodeGenContext& context, Value* condValue){
 
     if( ISTYPE(condValue, Type::IntegerTyID) ){
         condValue = context.builder.CreateIntCast(condValue, Type::getInt1Ty(context.llvmContext), true);
@@ -40,6 +40,22 @@ Value* CastToBoolean(CodeGenContext& context, Value* condValue){
     }else{
         return condValue;
     }
+}
+
+static llvm::Value* calcArrayIndex(shared_ptr<NArrayIndex> index, CodeGenContext &context){
+    auto sizeVec = context.getArraySize(index->arrayName->name);
+    cout << "sizeVec:" << sizeVec.size() << ", expressions: " << index->expressions->size() << endl;
+    assert(sizeVec.size() > 0 && sizeVec.size() == index->expressions->size());
+    auto expression = *(index->expressions->rbegin());
+
+    for(unsigned int i=sizeVec.size()-1; i>=1; i--){
+        auto temp = make_shared<NBinaryOperator>(make_shared<NInteger>(sizeVec[i]), TMUL, index->expressions->at(i-1));
+//        cout << "2" << endl;
+        expression = make_shared<NBinaryOperator>(temp, TPLUS, expression);
+//        cout << "3" << endl;
+    }
+
+    return expression->codeGen(context);
 }
 
 void CodeGenContext::generateCode(NBlock& root) {
@@ -292,10 +308,18 @@ llvm::Value* NVariableDeclaration::codeGen(CodeGenContext &context) {
     Value* inst = nullptr;
 
     if( this->type->isArray ){
-        auto arraySize = this->type->arraySize->codeGen(context);
-        auto arrayType = ArrayType::get(context.typeSystem.getVarType(this->type->name), this->type->arraySize->value);
-        inst = context.builder.CreateAlloca(arrayType, arraySize, "arraytmp");
-//        inst = context.builder.CreatePointerCast(inst, PointerType::getUnqual(arrayType));
+        uint64_t arraySize = 1;
+        std::vector<uint64_t> arraySizes;
+        for(auto it=this->type->arraySize->begin(); it!=this->type->arraySize->end(); it++){
+            NInteger* integer = dynamic_cast<NInteger*>(it->get());
+            arraySize *= integer->value;
+            arraySizes.push_back(integer->value);
+        }
+
+        context.setArraySize(this->id->name, arraySizes);
+        Value* arraySizeValue = NInteger(arraySize).codeGen(context);
+        auto arrayType = ArrayType::get(context.typeSystem.getVarType(this->type->name), arraySize);
+        inst = context.builder.CreateAlloca(arrayType, arraySizeValue, "arraytmp");
     }else{
         inst = context.builder.CreateAlloca(type);
     }
@@ -374,12 +398,6 @@ llvm::Value* NIfStatement::codeGen(CodeGenContext &context) {
 
 llvm::Value* NForStatement::codeGen(CodeGenContext &context) {
 
-    Value* condValue = this->condition->codeGen(context);
-    if( !condValue )
-        return nullptr;
-
-    condValue = CastToBoolean(context, condValue);
-
     Function* theFunction = context.builder.GetInsertBlock()->getParent();
 
     BasicBlock *block = BasicBlock::Create(context.llvmContext, "forloop", theFunction);
@@ -388,6 +406,12 @@ llvm::Value* NForStatement::codeGen(CodeGenContext &context) {
     // execute the initial
     if( this->initial )
         this->initial->codeGen(context);
+
+    Value* condValue = this->condition->codeGen(context);
+    if( !condValue )
+        return nullptr;
+
+    condValue = CastToBoolean(context, condValue);
 
     // fall to the block
     context.builder.CreateCondBr(condValue, block, after);
@@ -471,10 +495,8 @@ llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
     string typeStr = type->name;
 
     assert(type->isArray);
-//    if( !varPtr->getType()->isArrayTy() && !varPtr->getType()->isPointerTy() ){
-//    }
-//    std::vector<Value*> indices;
-    auto value = this->expression->codeGen(context);
+
+    auto value = calcArrayIndex(make_shared<NArrayIndex>(*this), context);
     ArrayRef<Value*> indices;
     if(context.isFuncArg(this->arrayName->name) ){
         cout << "isFuncArg" << endl;
@@ -488,8 +510,6 @@ llvm::Value *NArrayIndex::codeGen(CodeGenContext &context) {
     }
     auto ptr = context.builder.CreateInBoundsGEP(varPtr, indices, "elementPtr");
 
-//    cout << "4" << endl;
-//    ptr = context.builder.CreateBitCast(ptr, PointerType::get(context.typeSystem.getVarType(typeStr), 0), "castedPtr");
     return context.builder.CreateAlignedLoad(ptr, 4);
 }
 
@@ -508,9 +528,9 @@ llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
     if( !arrayPtr->getType()->isArrayTy() && !arrayPtr->getType()->isPointerTy() ){
         return LogErrorV("The variable is not array");
     }
-
 //    std::vector<Value*> indices;
-    auto index = this->arrayIndex->expression->codeGen(context);
+    auto index = calcArrayIndex(arrayIndex, context);
+//    cout << "here2" << endl;
     ArrayRef<Value*> gep2_array{ ConstantInt::get(Type::getInt64Ty(context.llvmContext), 0), index };
     auto ptr = context.builder.CreateInBoundsGEP(varPtr, gep2_array, "elementPtr");
 
@@ -520,10 +540,15 @@ llvm::Value *NArrayAssignment::codeGen(CodeGenContext &context) {
 llvm::Value *NArrayInitialization::codeGen(CodeGenContext &context) {
     cout << "Generating array initialization of " << this->declaration->id->name << endl;
     auto arrayPtr = this->declaration->codeGen(context);
-    for(int i=0; i < this->expressionList->size(); i++){
-        shared_ptr<NInteger> index = make_shared<NInteger>(i);
-        shared_ptr<NArrayIndex> arrayIndex = make_shared<NArrayIndex>(this->declaration->id, index);
-        NArrayAssignment assignment(arrayIndex, this->expressionList->at(i));
+    auto sizeVec = context.getArraySize(this->declaration->id->name);
+    // TODO: multi-dimension array initialization
+    assert(sizeVec.size() == 1);
+
+    for(int index=0; index < this->expressionList->size(); index++){
+        shared_ptr<NInteger> indexValue = make_shared<NInteger>(index);
+
+        shared_ptr<NArrayIndex> arrayIndex = make_shared<NArrayIndex>(this->declaration->id, indexValue);
+        NArrayAssignment assignment(arrayIndex, this->expressionList->at(index));
         assignment.codeGen(context);
     }
     return nullptr;

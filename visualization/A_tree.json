@@ -137,6 +137,12 @@
 									"children" : 
 									[
 										{
+											"children" : 
+											[
+												{
+													"name" : "NInteger:13"
+												}
+											],
 											"name" : "NIdentifier:int(Array)"
 										},
 										{
@@ -191,28 +197,19 @@
 									"children" : 
 									[
 										{
-											"name" : "NIdentifier:printf"
+											"name" : "NInteger:3"
 										},
 										{
-											"name" : "NLiteral:|%d|"
-										},
-										{
-											"children" : 
-											[
-												{
-													"name" : "NIdentifier:p"
-												},
-												{
-													"name" : "NIdentifier:x"
-												}
-											],
-											"name" : "NStructMember"
+											"name" : "NInteger:4"
 										}
 									],
-									"name" : "NMethodCall"
+									"name" : "NIdentifier:int(Array)"
+								},
+								{
+									"name" : "NIdentifier:arr2"
 								}
 							],
-							"name" : "NExpressionStatement"
+							"name" : "NVariableDeclaration"
 						},
 						{
 							"children" : 
@@ -237,6 +234,108 @@
 								}
 							],
 							"name" : "NVariableDeclaration"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"name" : "NInteger:0"
+										}
+									],
+									"name" : "NAssignment"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"name" : "NInteger:3"
+										}
+									],
+									"name" : "NBinaryOperator:272"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"children" : 
+											[
+												{
+													"name" : "NIdentifier:i"
+												},
+												{
+													"name" : "NInteger:1"
+												}
+											],
+											"name" : "NBinaryOperator:287"
+										}
+									],
+									"name" : "NAssignment"
+								}
+							],
+							"name" : "NForStatement"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"name" : "NInteger:0"
+										}
+									],
+									"name" : "NAssignment"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"name" : "NInteger:3"
+										}
+									],
+									"name" : "NBinaryOperator:272"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"children" : 
+											[
+												{
+													"name" : "NIdentifier:i"
+												},
+												{
+													"name" : "NInteger:1"
+												}
+											],
+											"name" : "NBinaryOperator:287"
+										}
+									],
+									"name" : "NAssignment"
+								}
+							],
+							"name" : "NForStatement"
 						},
 						{
 							"children" : 
