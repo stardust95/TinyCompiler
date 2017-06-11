@@ -1051,25 +1051,34 @@ entry:
 
 3. 数组使用
 ```c
-extern int printf(string format)
-extern int puts(string s)
+extern int printf(string str)
+extern int puts(string str)
 
 int main(){
-    int[10] oneDim = [1,2,3,4]
-    int[3][4] twoDim
+
+    int[13] arr = [ 1,2,3,4,5,6,7,8,9,10,11,12 ]
+    int[3][4] arr2
+
     int i
     int j
+    
     for(i=0; i<3; i=i+1){
         for(j=0; j<4; j=j+1){
-            twoDim[i][j] = i+j
+            arr2[i][j] = arr[i*4+j]
         }
     }
-    for(i=0; i<10; i=i+1){
-        printf("arr[%d] = %d", i, oneDim[i])
+
+    for(i=0; i<3; i=i+1){
+        for(j=0; j<4; j=j+1){
+            printf("%d,", arr2[i][j])
+        }
         puts("")
     }
+    
+    
     return 0
 }
+
 ```
 
 中间代码
@@ -1077,7 +1086,7 @@ int main(){
 ; ModuleID = 'main'
 source_filename = "main"
 
-@string = private unnamed_addr constant [13 x i8] c"arr[%d] = %d\00"
+@string = private unnamed_addr constant [4 x i8] c"%d,\00"
 @string.1 = private unnamed_addr constant [1 x i8] zeroinitializer
 
 declare i32 @printf(i8*)
@@ -1086,100 +1095,149 @@ declare i32 @puts(i8*)
 
 define i32 @main() {
 entry:
-  %arraytmp = alloca [10 x i32], i32 10
-  %arrayPtr = load [10 x i32], [10 x i32]* %arraytmp
-  %elementPtr = getelementptr inbounds [10 x i32], [10 x i32]* %arraytmp, i64 0, i32 0
+  %arraytmp = alloca [13 x i32], i32 13
+  %arrayPtr = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 0
   store i32 1, i32* %elementPtr, align 4
-  %arrayPtr1 = load [10 x i32], [10 x i32]* %arraytmp
-  %elementPtr2 = getelementptr inbounds [10 x i32], [10 x i32]* %arraytmp, i64 0, i32 1
+  %arrayPtr1 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr2 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 1
   store i32 2, i32* %elementPtr2, align 4
-  %arrayPtr3 = load [10 x i32], [10 x i32]* %arraytmp
-  %elementPtr4 = getelementptr inbounds [10 x i32], [10 x i32]* %arraytmp, i64 0, i32 2
+  %arrayPtr3 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr4 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 2
   store i32 3, i32* %elementPtr4, align 4
-  %arrayPtr5 = load [10 x i32], [10 x i32]* %arraytmp
-  %elementPtr6 = getelementptr inbounds [10 x i32], [10 x i32]* %arraytmp, i64 0, i32 3
+  %arrayPtr5 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr6 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 3
   store i32 4, i32* %elementPtr6, align 4
-  %arraytmp7 = alloca [12 x i32], i32 12
+  %arrayPtr7 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr8 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 4
+  store i32 5, i32* %elementPtr8, align 4
+  %arrayPtr9 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr10 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 5
+  store i32 6, i32* %elementPtr10, align 4
+  %arrayPtr11 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr12 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 6
+  store i32 7, i32* %elementPtr12, align 4
+  %arrayPtr13 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr14 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 7
+  store i32 8, i32* %elementPtr14, align 4
+  %arrayPtr15 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr16 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 8
+  store i32 9, i32* %elementPtr16, align 4
+  %arrayPtr17 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr18 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 9
+  store i32 10, i32* %elementPtr18, align 4
+  %arrayPtr19 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr20 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 10
+  store i32 11, i32* %elementPtr20, align 4
+  %arrayPtr21 = load [13 x i32], [13 x i32]* %arraytmp
+  %elementPtr22 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 11
+  store i32 12, i32* %elementPtr22, align 4
+  %arraytmp23 = alloca [12 x i32], i32 12
   %0 = alloca i32
   %1 = alloca i32
-  %arrayPtr8 = load i32, i32* %0
+  store i32 0, i32* %0
+  %arrayPtr24 = load i32, i32* %0
   %2 = load i32, i32* %0
   %cmptmp = icmp ult i32 %2, 3
   %3 = icmp ne i1 %cmptmp, false
-  store i32 0, i32* %0
-  br i1 %3, label %forloop, label %forcont26
+  br i1 %3, label %forloop, label %forcont45
 
 forloop:                                          ; preds = %forcont, %entry
-  %arrayPtr9 = load i32, i32* %1
-  %4 = load i32, i32* %1
-  %cmptmp10 = icmp ult i32 %4, 4
-  %5 = icmp ne i1 %cmptmp10, false
   store i32 0, i32* %1
-  br i1 %5, label %forloop11, label %forcont
+  %arrayPtr26 = load i32, i32* %1
+  %4 = load i32, i32* %1
+  %cmptmp27 = icmp ult i32 %4, 4
+  %5 = icmp ne i1 %cmptmp27, false
+  br i1 %5, label %forloop25, label %forcont
 
-forloop11:                                        ; preds = %forloop11, %forloop
-  %arrayPtr12 = load [12 x i32], [12 x i32]* %arraytmp7
-  %arrayPtr13 = load i32, i32* %0
+forloop25:                                        ; preds = %forloop25, %forloop
+  %arrayPtr28 = load [12 x i32], [12 x i32]* %arraytmp23
+  %arrayPtr29 = load i32, i32* %0
   %6 = load i32, i32* %0
-  %arrayPtr14 = load i32, i32* %1
+  %multmp = mul i32 4, %6
+  %arrayPtr30 = load i32, i32* %1
   %7 = load i32, i32* %1
-  %multmp = mul i32 %6, %7
-  %elementPtr15 = getelementptr inbounds [12 x i32], [12 x i32]* %arraytmp7, i64 0, i32 %multmp
-  %arrayPtr16 = load i32, i32* %0
+  %addtmp = add i32 %multmp, %7
+  %elementPtr31 = getelementptr inbounds [12 x i32], [12 x i32]* %arraytmp23, i64 0, i32 %addtmp
+  %arrayPtr32 = load i32, i32* %0
   %8 = load i32, i32* %0
-  %arrayPtr17 = load i32, i32* %1
+  %multmp33 = mul i32 %8, 4
+  %arrayPtr34 = load i32, i32* %1
   %9 = load i32, i32* %1
-  %addtmp = add i32 %8, %9
-  store i32 %addtmp, i32* %elementPtr15, align 4
-  %arrayPtr18 = load i32, i32* %1
-  %10 = load i32, i32* %1
-  %addtmp19 = add i32 %10, 1
-  store i32 %addtmp19, i32* %1
-  %arrayPtr20 = load i32, i32* %1
+  %addtmp35 = add i32 %multmp33, %9
+  %elementPtr36 = getelementptr inbounds [13 x i32], [13 x i32]* %arraytmp, i64 0, i32 %addtmp35
+  %10 = load i32, i32* %elementPtr36, align 4
+  store i32 %10, i32* %elementPtr31, align 4
+  %arrayPtr37 = load i32, i32* %1
   %11 = load i32, i32* %1
-  %cmptmp21 = icmp ult i32 %11, 4
-  %12 = icmp ne i1 %cmptmp21, false
-  br i1 %12, label %forloop11, label %forcont
+  %addtmp38 = add i32 %11, 1
+  store i32 %addtmp38, i32* %1
+  %arrayPtr39 = load i32, i32* %1
+  %12 = load i32, i32* %1
+  %cmptmp40 = icmp ult i32 %12, 4
+  %13 = icmp ne i1 %cmptmp40, false
+  br i1 %13, label %forloop25, label %forcont
 
-forcont:                                          ; preds = %forloop11, %forloop
-  %arrayPtr22 = load i32, i32* %0
-  %13 = load i32, i32* %0
-  %addtmp23 = add i32 %13, 1
-  store i32 %addtmp23, i32* %0
-  %arrayPtr24 = load i32, i32* %0
+forcont:                                          ; preds = %forloop25, %forloop
+  %arrayPtr41 = load i32, i32* %0
   %14 = load i32, i32* %0
-  %cmptmp25 = icmp ult i32 %14, 3
-  %15 = icmp ne i1 %cmptmp25, false
-  br i1 %15, label %forloop, label %forcont26
+  %addtmp42 = add i32 %14, 1
+  store i32 %addtmp42, i32* %0
+  %arrayPtr43 = load i32, i32* %0
+  %15 = load i32, i32* %0
+  %cmptmp44 = icmp ult i32 %15, 3
+  %16 = icmp ne i1 %cmptmp44, false
+  br i1 %16, label %forloop, label %forcont45
 
-forcont26:                                        ; preds = %forcont, %entry
-  %arrayPtr27 = load i32, i32* %0
-  %16 = load i32, i32* %0
-  %cmptmp28 = icmp ult i32 %16, 10
-  %17 = icmp ne i1 %cmptmp28, false
+forcont45:                                        ; preds = %forcont, %entry
   store i32 0, i32* %0
-  br i1 %17, label %forloop29, label %forcont38
+  %arrayPtr47 = load i32, i32* %0
+  %17 = load i32, i32* %0
+  %cmptmp48 = icmp ult i32 %17, 3
+  %18 = icmp ne i1 %cmptmp48, false
+  br i1 %18, label %forloop46, label %forcont67
 
-forloop29:                                        ; preds = %forloop29, %forcont26
-  %arrayPtr30 = load i32, i32* %0
-  %18 = load i32, i32* %0
-  %arrayPtr31 = load i32, i32* %0
-  %19 = load i32, i32* %0
-  %elementPtr32 = getelementptr inbounds [10 x i32], [10 x i32]* %arraytmp, i64 0, i32 %19
-  %20 = load i32, i32* %elementPtr32, align 4
-  %calltmp = call i32 @printf([13 x i8]* @string, i32 %18, i32 %20)
-  %calltmp33 = call i32 @puts([1 x i8]* @string.1)
-  %arrayPtr34 = load i32, i32* %0
+forloop46:                                        ; preds = %forcont61, %forcont45
+  store i32 0, i32* %1
+  %arrayPtr50 = load i32, i32* %1
+  %19 = load i32, i32* %1
+  %cmptmp51 = icmp ult i32 %19, 4
+  %20 = icmp ne i1 %cmptmp51, false
+  br i1 %20, label %forloop49, label %forcont61
+
+forloop49:                                        ; preds = %forloop49, %forloop46
+  %arrayPtr52 = load i32, i32* %0
   %21 = load i32, i32* %0
-  %addtmp35 = add i32 %21, 1
-  store i32 %addtmp35, i32* %0
-  %arrayPtr36 = load i32, i32* %0
-  %22 = load i32, i32* %0
-  %cmptmp37 = icmp ult i32 %22, 10
-  %23 = icmp ne i1 %cmptmp37, false
-  br i1 %23, label %forloop29, label %forcont38
+  %multmp53 = mul i32 4, %21
+  %arrayPtr54 = load i32, i32* %1
+  %22 = load i32, i32* %1
+  %addtmp55 = add i32 %multmp53, %22
+  %elementPtr56 = getelementptr inbounds [12 x i32], [12 x i32]* %arraytmp23, i64 0, i32 %addtmp55
+  %23 = load i32, i32* %elementPtr56, align 4
+  %calltmp = call i32 @printf([4 x i8]* @string, i32 %23)
+  %arrayPtr57 = load i32, i32* %1
+  %24 = load i32, i32* %1
+  %addtmp58 = add i32 %24, 1
+  store i32 %addtmp58, i32* %1
+  %arrayPtr59 = load i32, i32* %1
+  %25 = load i32, i32* %1
+  %cmptmp60 = icmp ult i32 %25, 4
+  %26 = icmp ne i1 %cmptmp60, false
+  br i1 %26, label %forloop49, label %forcont61
 
-forcont38:                                        ; preds = %forloop29, %forcont26
+forcont61:                                        ; preds = %forloop49, %forloop46
+  %calltmp62 = call i32 @puts([1 x i8]* @string.1)
+  %arrayPtr63 = load i32, i32* %0
+  %27 = load i32, i32* %0
+  %addtmp64 = add i32 %27, 1
+  store i32 %addtmp64, i32* %0
+  %arrayPtr65 = load i32, i32* %0
+  %28 = load i32, i32* %0
+  %cmptmp66 = icmp ult i32 %28, 3
+  %29 = icmp ne i1 %cmptmp66, false
+  br i1 %29, label %forloop46, label %forcont67
+
+forcont67:                                        ; preds = %forcont61, %forcont45
   ret i32 0
 }
 ```

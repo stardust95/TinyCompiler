@@ -18,8 +18,7 @@ int main(){
 
     for(i=0; i<3; i=i+1){
         for(j=0; j<4; j=j+1){
-            printf("%d,", i*4+j)
-            arr2[i][j] = i*4+j
+            arr2[i][j] = arr[i*4+j]
         }
     }
 
