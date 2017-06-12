@@ -141,8 +141,8 @@ public:
 class NIdentifier : public NExpression {
 public:
 	std::string name;
-    bool isType;
-    bool isArray;
+    bool isType = false;
+    bool isArray = false;
 
     shared_ptr<ExpressionList> arraySize = make_shared<ExpressionList>();
 
@@ -365,8 +365,9 @@ public:
 
 	NVariableDeclaration(const shared_ptr<NIdentifier> type, shared_ptr<NIdentifier> id, shared_ptr<NExpression> assignmentExpr = NULL)
 		: type(type), id(id), assignmentExpr(assignmentExpr) {
-        assert(type->isType);
-        assert(!type->isArray || (type->isArray && type->arraySize != nullptr));
+            cout << "isArray = " << type->isArray << endl;
+            assert(type->isType);
+            assert(!type->isArray || (type->isArray && type->arraySize != nullptr));
 	}
 
 	string getTypeName() const override {

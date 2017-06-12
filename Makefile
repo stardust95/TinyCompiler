@@ -10,7 +10,7 @@ OBJS = grammar.o \
 
 LLVMCONFIG = llvm-config-3.9
 CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11
-LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic -ljsoncpp
+LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic -L/usr/local/lib -ljsoncpp
 LIBS = `$(LLVMCONFIG) --libs`
 
 clean:

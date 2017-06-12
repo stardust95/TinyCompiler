@@ -5,54 +5,6 @@
 			"children" : 
 			[
 				{
-					"name" : "NIdentifier:int"
-				},
-				{
-					"name" : "NIdentifier:printf"
-				},
-				{
-					"children" : 
-					[
-						{
-							"name" : "NIdentifier:string"
-						},
-						{
-							"name" : "NIdentifier:format"
-						}
-					],
-					"name" : "NVariableDeclaration"
-				}
-			],
-			"name" : "NFunctionDeclaration"
-		},
-		{
-			"children" : 
-			[
-				{
-					"name" : "NIdentifier:int"
-				},
-				{
-					"name" : "NIdentifier:scanf"
-				},
-				{
-					"children" : 
-					[
-						{
-							"name" : "NIdentifier:string"
-						},
-						{
-							"name" : "NIdentifier:format"
-						}
-					],
-					"name" : "NVariableDeclaration"
-				}
-			],
-			"name" : "NFunctionDeclaration"
-		},
-		{
-			"children" : 
-			[
-				{
 					"children" : 
 					[
 						{
@@ -86,43 +38,43 @@
 					"name" : "NIdentifier:int"
 				},
 				{
-					"name" : "NIdentifier:func"
+					"name" : "NIdentifier:printf"
 				},
 				{
 					"children" : 
 					[
 						{
-							"name" : "NIdentifier:Point"
+							"name" : "NIdentifier:string"
 						},
 						{
-							"name" : "NIdentifier:p"
+							"name" : "NIdentifier:str"
 						}
 					],
 					"name" : "NVariableDeclaration"
+				}
+			],
+			"name" : "NFunctionDeclaration"
+		},
+		{
+			"children" : 
+			[
+				{
+					"name" : "NIdentifier:int"
+				},
+				{
+					"name" : "NIdentifier:puts"
 				},
 				{
 					"children" : 
 					[
 						{
-							"children" : 
-							[
-								{
-									"children" : 
-									[
-										{
-											"name" : "NIdentifier:p"
-										},
-										{
-											"name" : "NIdentifier:x"
-										}
-									],
-									"name" : "NStructMember"
-								}
-							],
-							"name" : "NReturnStatement"
+							"name" : "NIdentifier:string"
+						},
+						{
+							"name" : "NIdentifier:str"
 						}
 					],
-					"name" : "NBlock"
+					"name" : "NVariableDeclaration"
 				}
 			],
 			"name" : "NFunctionDeclaration"
@@ -158,13 +110,127 @@
 									"children" : 
 									[
 										{
-											"name" : "NInteger:32"
+											"children" : 
+											[
+												{
+													"name" : "NIdentifier:p"
+												},
+												{
+													"name" : "NIdentifier:x"
+												}
+											],
+											"name" : "NStructMember"
+										},
+										{
+											"name" : "NInteger:1"
 										}
 									],
-									"name" : "NIdentifier:char(Array)"
+									"name" : "NStructAssignment"
+								}
+							],
+							"name" : "NExpressionStatement"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"children" : 
+											[
+												{
+													"name" : "NInteger:13"
+												}
+											],
+											"name" : "NIdentifier:int(Array)"
+										},
+										{
+											"name" : "NIdentifier:arr"
+										}
+									],
+									"name" : "NVariableDeclaration"
 								},
 								{
-									"name" : "NIdentifier:input"
+									"name" : "NInteger:1"
+								},
+								{
+									"name" : "NInteger:2"
+								},
+								{
+									"name" : "NInteger:3"
+								},
+								{
+									"name" : "NInteger:4"
+								},
+								{
+									"name" : "NInteger:5"
+								},
+								{
+									"name" : "NInteger:6"
+								},
+								{
+									"name" : "NInteger:7"
+								},
+								{
+									"name" : "NInteger:8"
+								},
+								{
+									"name" : "NInteger:9"
+								},
+								{
+									"name" : "NInteger:10"
+								},
+								{
+									"name" : "NInteger:11"
+								},
+								{
+									"name" : "NInteger:12"
+								}
+							],
+							"name" : "NArrayInitialization"
+						},
+						{
+							"children" : 
+							[
+								{
+									"children" : 
+									[
+										{
+											"name" : "NInteger:3"
+										},
+										{
+											"name" : "NInteger:4"
+										}
+									],
+									"name" : "NIdentifier:int(Array)"
+								},
+								{
+									"name" : "NIdentifier:arr2"
+								}
+							],
+							"name" : "NVariableDeclaration"
+						},
+						{
+							"children" : 
+							[
+								{
+									"name" : "NIdentifier:int"
+								},
+								{
+									"name" : "NIdentifier:i"
+								}
+							],
+							"name" : "NVariableDeclaration"
+						},
+						{
+							"children" : 
+							[
+								{
+									"name" : "NIdentifier:int"
+								},
+								{
+									"name" : "NIdentifier:j"
 								}
 							],
 							"name" : "NVariableDeclaration"
@@ -176,19 +242,49 @@
 									"children" : 
 									[
 										{
-											"name" : "NIdentifier:scanf"
+											"name" : "NIdentifier:i"
 										},
 										{
-											"name" : "NLiteral:%s"
-										},
-										{
-											"name" : "NIdentifier:input"
+											"name" : "NInteger:0"
 										}
 									],
-									"name" : "NMethodCall"
+									"name" : "NAssignment"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"name" : "NInteger:3"
+										}
+									],
+									"name" : "NBinaryOperator:272"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
+										},
+										{
+											"children" : 
+											[
+												{
+													"name" : "NIdentifier:i"
+												},
+												{
+													"name" : "NInteger:1"
+												}
+											],
+											"name" : "NBinaryOperator:287"
+										}
+									],
+									"name" : "NAssignment"
 								}
 							],
-							"name" : "NExpressionStatement"
+							"name" : "NForStatement"
 						},
 						{
 							"children" : 
@@ -197,31 +293,49 @@
 									"children" : 
 									[
 										{
-											"name" : "NIdentifier:printf"
+											"name" : "NIdentifier:i"
 										},
 										{
-											"name" : "NLiteral:%s = %d"
+											"name" : "NInteger:0"
+										}
+									],
+									"name" : "NAssignment"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
 										},
 										{
-											"name" : "NIdentifier:input"
+											"name" : "NInteger:3"
+										}
+									],
+									"name" : "NBinaryOperator:272"
+								},
+								{
+									"children" : 
+									[
+										{
+											"name" : "NIdentifier:i"
 										},
 										{
 											"children" : 
 											[
 												{
-													"name" : "NIdentifier:func"
+													"name" : "NIdentifier:i"
 												},
 												{
-													"name" : "NIdentifier:p"
+													"name" : "NInteger:1"
 												}
 											],
-											"name" : "NMethodCall"
+											"name" : "NBinaryOperator:287"
 										}
 									],
-									"name" : "NMethodCall"
+									"name" : "NAssignment"
 								}
 							],
-							"name" : "NExpressionStatement"
+							"name" : "NForStatement"
 						},
 						{
 							"children" : 
